@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Session - AI Fitness</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ timestamp }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <h1 class="logo">AI.FIT</h1>
+            <nav><a href="/dashboard">Dashboard</a><a href="/performance">Performance</a><a href="/logout">Logout</a></nav>
+        </div>
+    </header>
+    <main class="container" id="workout-session">
+        <div class="workout-header">
+            <h2 id="exercise-name">Loading...</h2>
+            <div class="progress-bar-container"><div id="progress-bar"></div></div>
+        </div>
+        <div class="workout-card">
+            <div class="exercise-media">
+                <img id="exercise-gif" src="" alt="Exercise demonstration" style="display: none;">
+            </div>
+            <div id="exercise-details"></div>
+            <div id="logging-interface"></div>
+            <div id="instructions-panel" class="instructions-panel" style="display: none;">
+                <div id="exercise-instructions"></div>
+            </div>
+            <div class="workout-controls">
+                <button id="prev-exercise-btn" class="btn btn-secondary" disabled>Previous</button>
+                <button id="next-exercise-btn" class="btn btn-primary">Next</button>
+            </div>
+        </div>
+        <div class="session-summary" style="display: none;">
+            <h2>Workout Complete!</h2>
+            <p>Approximate Calories Burned: <strong id="calories-burned">0</strong></p>
+            <form id="weight-log-form">
+                <div class="form-group">
+                    <label for="todays-weight">Log Today's Weight (kg)</label>
+                    <input type="number" step="0.1" id="todays-weight" name="todays-weight" placeholder="e.g., 75.5">
+                </div>
+                <button type="submit" class="btn btn-primary">Finish & Save</button>
+            </form>
+        </div>
+    </main>
+    <div id="rest-timer-overlay" style="display: none;">
+        <div class="rest-timer-content">
+            <h2>REST</h2>
+            <div id="timer-countdown">90</div>
+            <button id="skip-rest-btn" class="btn btn-secondary">Skip Rest</button>
+        </div>
+    </div>
+    <!-- THIS IS THE FIX: Use a local URL for the sound -->
+    <audio id="timer-sound" src="{{ url_for('static', filename='assets/timer-sound.mp3') }}" preload="auto"></audio>
+    <script>
+        const workoutPlan = {{ workout_data|tojson }};
+        const userProfile = {{ profile|tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='workout.js') }}?v={{ timestamp }}"></script>
+</body>
+</html>

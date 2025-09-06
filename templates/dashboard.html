@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AI Fitness</title>
+    <!-- Append the timestamp to the CSS file link -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ timestamp }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <h1 class="logo">AI.FIT</h1>
+            <nav>
+                <a href="/dashboard" class="active">Dashboard</a>
+                <a href="/performance">Performance</a>
+                <a href="/logout">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="dashboard-header">
+            <h2>Welcome back, {{ user.username }}!</h2>
+            <p>Your AI-powered plan for the week.</p>
+        </div>
+
+        <!-- Week Navigation Tabs -->
+        <div class="week-tabs">
+            <!-- This will be populated by JavaScript -->
+        </div>
+
+        <!-- Today's Workout Preview -->
+        <div class="workout-preview-card">
+            <h3 id="preview-title">Today's Workout: Loading...</h3>
+            <ul id="exercise-list">
+                <!-- This will be populated by JavaScript -->
+            </ul>
+            <button id="start-workout-btn" class="btn btn-primary" disabled>Start Workout</button>
+        </div>
+    </main>
+
+    <!-- Append the timestamp to the JavaScript file link -->
+    <script src="{{ url_for('static', filename='script.js') }}?v={{ timestamp }}"></script>
+</body>
+</html>
