@@ -14,7 +14,6 @@
             <p>Let's get some information to personalize your fitness journey.</p>
             
             <form action="/signup" method="post" class="auth-form">
-                <!-- Step 1 & 2 are unchanged -->
                 <div class="form-step">
                     <h3>Account Info</h3>
                     <div class="form-group"><label for="username">Username</label><input type="text" id="username" name="username" required></div>
@@ -25,43 +24,55 @@
                     <div class="form-group"><label for="age">Age</label><input type="number" id="age" name="age" required></div>
                     <div class="form-group"><label for="height">Height (cm)</label><input type="number" id="height" name="height" required></div>
                     <div class="form-group"><label for="weight">Starting Weight (kg)</label><input type="number" step="0.1" id="weight" name="weight" required></div>
-                    <div class="form-group"><label for="gender">Gender</label><select id="gender" name="gender" required><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select></div>
+                    <div class="form-group"><label for="gender">Gender</label><select id="gender" name="gender" required><option value="" disabled selected>Select...</option><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select></div>
                 </div>
                 
-                <!-- Step 3: Revised Fitness Profile -->
                 <div class="form-step">
                     <h3>This Week's Fitness Plan</h3>
-                    <div class="form-group"><label>Which days can you work out?</label><div class="checkbox-group day-selector"><input type="checkbox" id="day-mon" name="workout_days" value="Monday" required><label for="day-mon">Mon</label><input type="checkbox" id="day-tue" name="workout_days" value="Tuesday"><label for="day-tue">Tue</label><input type="checkbox" id="day-wed" name="workout_days" value="Wednesday"><label for="day-wed">Wed</label><input type="checkbox" id="day-thu" name="workout_days" value="Thursday"><label for="day-thu">Thu</label><input type="checkbox" id="day-fri" name="workout_days" value="Friday"><label for="day-fri">Fri</label><input type="checkbox" id="day-sat" name="workout_days" value="Saturday"><label for="day-sat">Sat</label><input type="checkbox" id="day-sun" name="workout_days" value="Sunday"><label for="day-sun">Sun</label></div></div>
-                    <div class="form-group"><label>What are your physique goals? (Select up to two)</label><div class="checkbox-group"><input type="checkbox" id="goal1" name="physique_goal" value="athletic" required><label for="goal1">Athletic</label><input type="checkbox" id="goal2" name="physique_goal" value="bold"><label for="goal2">Bold/Bulky</label><input type="checkbox" id="goal3" name="physique_goal" value="lean"><label for="goal3">Lean Physique</label><input type="checkbox" id="goal4" name="physique_goal" value="stamina"><label for="goal4">Stamina/Endurance</label><input type="checkbox" id="goal5" name="physique_goal" value="strength"><label for="goal5">Pure Strength</label></div></div>
+                    <div class="form-group"><label>Which days can you work out?</label><div class="checkbox-group day-selector"><input type="checkbox" id="day-mon" name="workout_days" value="Monday"><label for="day-mon">Mon</label><input type="checkbox" id="day-tue" name="workout_days" value="Tuesday"><label for="day-tue">Tue</label><input type="checkbox" id="day-wed" name="workout_days" value="Wednesday"><label for="day-wed">Wed</label><input type="checkbox" id="day-thu" name="workout_days" value="Thursday"><label for="day-thu">Thu</label><input type="checkbox" id="day-fri" name="workout_days" value="Friday"><label for="day-fri">Fri</label><input type="checkbox" id="day-sat" name="workout_days" value="Saturday"><label for="day-sat">Sat</label><input type="checkbox" id="day-sun" name="workout_days" value="Sunday"><label for="day-sun">Sun</label></div></div>
+                    <div class="form-group"><label>What are your physique goals?</label><div class="checkbox-group"><input type="checkbox" id="goal1" name="physique_goal" value="athletic"><label for="goal1">Athletic</label><input type="checkbox" id="goal2" name="physique_goal" value="bold"><label for="goal2">Bold/Bulky</label><input type="checkbox" id="goal3" name="physique_goal" value="lean"><label for="goal3">Lean Physique</label><input type="checkbox" id="goal4" name="physique_goal" value="stamina"><label for="goal4">Stamina/Endurance</label><input type="checkbox" id="goal5" name="physique_goal" value="strength"><label for="goal5">Pure Strength</label></div></div>
                     <div class="form-group"><label for="duration">How long can you train per session?</label><select id="duration" name="duration" required><option value="0.75">45 Minutes</option><option value="1.0" selected>1 Hour</option><option value="1.5">1 Hour 30 Minutes</option><option value="2.0">2 Hours</option></select></div>
                     <div class="form-group"><label>Equipment Access</label><select id="equipment" name="equipment" required><option value="both">Machines & Free Weights</option><option value="machine">Machines Only</option><option value="none">No Equipment</option></select></div>
                 </div>
 
-                <!-- NEW SECTION: Focus Areas -->
                 <div class="form-step">
-                    <h3>Focus Areas</h3>
-                    <div class="form-group"><label>Which body parts do you want to focus on? (Optional)</label><div class="checkbox-group"><input type="checkbox" id="focus1" name="focus_areas" value="abs"><label for="focus1">Abs</label><input type="checkbox" id="focus2" name="focus_areas" value="chest"><label for="focus2">Chest</label><input type="checkbox" id="focus3" name="focus_areas" value="arms"><label for="focus3">Arms</label><input type="checkbox" id="focus4" name="focus_areas" value="legs"><label for="focus4">Legs</label><input type="checkbox" id="focus5" name="focus_areas" value="glutes"><label for="focus5">Glutes</label></div></div>
+                    <h3>Focus Areas (Optional)</h3>
+                    <div class="form-group"><label>Which body parts do you want to focus on?</label><div class="checkbox-group"><input type="checkbox" id="focus1" name="focus_areas" value="abs"><label for="focus1">Abs</label><input type="checkbox" id="focus2" name="focus_areas" value="chest"><label for="focus2">Chest</label><input type="checkbox" id="focus3" name="focus_areas" value="arms"><label for="focus3">Arms</label><input type="checkbox" id="focus4" name="focus_areas" value="legs"><label for="focus4">Legs</label><input type="checkbox" id="focus5" name="focus_areas" value="glutes"><label for="focus5">Glutes</label></div></div>
                 </div>
 
-                <!-- NEW SECTION: Previous Workout Logging -->
                 <div class="form-step" id="previous-log-section">
                     <h3>Log Last Week's Workout (Optional)</h3>
-                    <p class="form-subtitle">Tell the AI what you did on one day last week to help it build a better starting plan.</p>
+                    <p class="form-subtitle">Tell the AI what you did on one day last week to improve its first suggestion.</p>
                     <div class="form-group"><label>Select a day you worked out last week:</label><div class="checkbox-group day-selector"><input type="checkbox" id="prev-mon" name="prev_day" value="Monday"><label for="prev-mon">Mon</label><input type="checkbox" id="prev-tue" name="prev_day" value="Tuesday"><label for="prev-tue">Tue</label><input type="checkbox" id="prev-wed" name="prev_day" value="Wednesday"><label for="prev-wed">Wed</label><input type="checkbox" id="prev-thu" name="prev_day" value="Thursday"><label for="prev-thu">Thu</label><input type="checkbox" id="prev-fri" name="prev_day" value="Friday"><label for="prev-fri">Fri</label><input type="checkbox" id="prev-sat" name="prev_day" value="Saturday"><label for="prev-sat">Sat</label><input type="checkbox" id="prev-sun" name="prev_day" value="Sunday"><label for="prev-sun">Sun</label></div></div>
                     
-                    <!-- Hidden Exercise List -->
+                    <!-- THIS IS THE SECTION THAT WAS MISSING -->
+                    <div id="exercise-list-monday" class="exercise-list" style="display: none;">
+                        <div class="exercise-item"><label><input type="checkbox" class="exercise-checkbox" name="prev_exercise" value="Vertical Chest Press"> Vertical Chest Press</label><div class="log-inputs"><input type="number" name="prev_Vertical Chest Press_reps" placeholder="Reps"><input type="number" name="prev_Vertical Chest Press_kg" placeholder="kg"></div></div>
+                    </div>
+                    <div id="exercise-list-tuesday" class="exercise-list" style="display: none;">
+                        <div class="exercise-item"><label><input type="checkbox" class="exercise-checkbox" name="prev_exercise" value="Lat Pull Down"> Lat Pull Down</label><div class="log-inputs"><input type="number" name="prev_Lat Pull Down_reps" placeholder="Reps"><input type="number" name="prev_Lat Pull Down_kg" placeholder="kg"></div></div>
+                    </div>
+                    <div id="exercise-list-wednesday" class="exercise-list" style="display: none;">
+                         <div class="exercise-item"><label><input type="checkbox" class="exercise-checkbox" name="prev_exercise" value="Leg Extension"> Leg Extension</label><div class="log-inputs"><input type="number" name="prev_Leg Extension_reps" placeholder="Reps"><input type="number" name="prev_Leg Extension_kg" placeholder="kg"></div></div>
+                    </div>
+                    <div id="exercise-list-thursday" class="exercise-list" style="display: none;">
+                        <div class="exercise-item"><label><input type="checkbox" class="exercise-checkbox" name="prev_exercise" value="Vertical Chest Press"> Vertical Chest Press</label><div class="log-inputs"><input type="number" name="prev_Vertical Chest Press_reps" placeholder="Reps"><input type="number" name="prev_Vertical Chest Press_kg" placeholder="kg"></div></div>
+                    </div>
                     <div id="exercise-list-friday" class="exercise-list" style="display: none;">
-                        <div class="exercise-item"><label><input type="checkbox" class="exercise-checkbox" name="prev_exercise" value="Lat Pull Down"> Lat Pull Down</label><div class="log-inputs"><input type="number" name="prev_Lat Pull Down_sets" placeholder="Sets"><input type="number" name="prev_Lat Pull Down_reps" placeholder="Reps"><input type="number" name="prev_Lat Pull Down_kg" placeholder="kg"></div></div>
-                        <div class="exercise-item"><label><input type="checkbox" class="exercise-checkbox" name="prev_exercise" value="Vertical Chest Press"> Vertical Chest Press</label><div class="log-inputs"><input type="number" name="prev_Vertical Chest Press_sets" placeholder="Sets"><input type="number" name="prev_Vertical Chest Press_reps" placeholder="Reps"><input type="number" name="prev_Vertical Chest Press_kg" placeholder="kg"></div></div>
-                        <!-- Add more exercises and lists for other days here -->
+                        <div class="exercise-item"><label><input type="checkbox" class="exercise-checkbox" name="prev_exercise" value="Lat Pull Down"> Lat Pull Down</label><div class="log-inputs"><input type="number" name="prev_Lat Pull Down_reps" placeholder="Reps"><input type="number" name="prev_Lat Pull Down_kg" placeholder="kg"></div></div>
+                    </div>
+                    <div id="exercise-list-saturday" class="exercise-list" style="display: none;">
+                         <div class="exercise-item"><label><input type="checkbox" class="exercise-checkbox" name="prev_exercise" value="Leg Extension"> Leg Extension</label><div class="log-inputs"><input type="number" name="prev_Leg Extension_reps" placeholder="Reps"><input type="number" name="prev_Leg Extension_kg" placeholder="kg"></div></div>
+                    </div>
+                    <div id="exercise-list-sunday" class="exercise-list" style="display: none;">
+                        <p>Rest day exercises cannot be logged.</p>
                     </div>
                 </div>
                 
-                <button type="submit" class="btn btn-primary">Create Account & Start</button>
+                <button type="submit" class="btn btn-primary" disabled>Please Fill Out Your Profile</button>
             </form>
         </div>
     </div>
-    <!-- Link the new JS file -->
     <script src="{{ url_for('static', filename='signup.js') }}"></script>
 </body>
 </html>
