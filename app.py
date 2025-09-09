@@ -11,8 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # --- APP & DATABASE CONFIGURATION ---
 app = Flask(__name__)
-# Securely read the app's main secret key from the environment
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a_very_secret_key_for_local_development')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a_default_secret_key_for_local_dev')
 database_url = os.environ.get('DATABASE_URL')
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
@@ -55,6 +54,9 @@ class UserProfile(db.Model):
 class PreviousLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     exercise_name = db.Column(db.String(100), nullable=False)
+    sets = db.Column(db.Integer, nullable=True)
+    reps = db.Column(db.Integer, nullable=True)
+    kg = db.Column(db.Float, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class WorkoutPlan(db.Model):
@@ -195,8 +197,8 @@ def generate_ai_workout_plan(user):
                 if area in EXERCISE_KNOWLEDGE_BASE['main']:
                     exercises_to_add.append(random.choice(get_available_exercises(area)))
             
-            # Use a dictionary to remove duplicate exercises by name
-            unique_exercises = {ex['name']: ex for ex in exercises_to_add}.values()
+            # Use a dictionary to remove duplicate exercises by name, preserving order
+            unique_exercises = list({ex['name']: ex for ex in exercises_to_add}.values())
 
             for ex_obj in unique_exercises:
                 ex_obj_copy = ex_obj.copy()
@@ -257,8 +259,19 @@ def signup():
         )
         db.session.add(new_profile)
         
-        for ex_name in request.form.getlist('prev_exercise'):
-            db.session.add(PreviousLog(exercise_name=ex_name, user_id=new_user.id))
+        prev_exercises = request.form.getlist('prev_exercise')
+        for ex_name in prev_exercises:
+            sets = request.form.get(f"prev_{ex_name}_sets")
+            reps = request.form.get(f"prev_{ex_name}_reps")
+            kg = request.form.get(f"prev_{ex_name}_kg")
+            
+            db.session.add(PreviousLog(
+                exercise_name=ex_name,
+                sets=int(sets) if sets else None,
+                reps=int(reps) if reps else None,
+                kg=float(kg) if kg else None,
+                user_id=new_user.id
+            ))
         
         db.session.commit()
         
