@@ -1,9 +1,7 @@
-document.addEventListener('DOMContentLoaded', function() { // All code must be inside this function
-
-    // Only run this script on the signup page
+document.addEventListener('DOMContentLoaded', function() {
     const signupForm = document.querySelector('form[action="/signup"]');
     if (!signupForm) {
-        return; // Now this is legal
+        return;
     }
     
     // --- DOM Elements ---
@@ -14,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() { // All code must be i
 
     const previousLogSection = document.getElementById('previous-log-section');
     const daySelectors = previousLogSection.querySelectorAll('.day-selector input');
-    const exerciseLists = previousLogSection.querySelectorAll('.exercise-list');
+    const exerciseList = document.getElementById('exercise-list-dynamic');
 
     // --- Initial State ---
     submitButton.disabled = true;
@@ -23,20 +21,18 @@ document.addEventListener('DOMContentLoaded', function() { // All code must be i
     // --- Functions ---
     function validateForm() {
         let allValid = true;
-        // Check standard required inputs
+        
         allRequiredInputs.forEach(input => {
             if (!input.value.trim()) {
                 allValid = false;
             }
         });
 
-        // Check that at least one workout day is selected
         const oneDaySelected = Array.from(workoutDayCheckboxes).some(cb => cb.checked);
         if (!oneDaySelected) {
             allValid = false;
         }
 
-        // Check that at least one physique goal is selected
         const oneGoalSelected = Array.from(physiqueGoalCheckboxes).some(cb => cb.checked);
         if (!oneGoalSelected) {
             allValid = false;
@@ -52,20 +48,13 @@ document.addEventListener('DOMContentLoaded', function() { // All code must be i
     }
 
     function handleDaySelection(e) {
-        const selectedDay = e.target.value;
-        const targetListId = `exercise-list-${selectedDay.toLowerCase()}`;
-
-        // Hide all exercise lists
-        exerciseLists.forEach(list => list.style.display = 'none');
-
         if (e.target.checked) {
-            // Uncheck other days
             daySelectors.forEach(day => {
                 if(day !== e.target) day.checked = false;
             });
-            // Show the target list
-            const targetList = document.getElementById(targetListId);
-            if (targetList) targetList.style.display = 'block';
+            exerciseList.style.display = 'block';
+        } else {
+            exerciseList.style.display = 'none';
         }
     }
 
@@ -80,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() { // All code must be i
 
     // --- Event Listeners ---
     signupForm.addEventListener('input', validateForm);
-    signupForm.addEventListener('change', validateForm); // For selects and checkboxes
+    signupForm.addEventListener('change', validateForm);
 
     daySelectors.forEach(selector => selector.addEventListener('change', handleDaySelection));
 
@@ -90,5 +79,4 @@ document.addEventListener('DOMContentLoaded', function() { // All code must be i
 
     // --- Initial Call ---
     validateForm();
-
-}); // The closing curly brace for the DOMContentLoaded function
+});

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - AI Fitness</title>
-    <!-- Append the timestamp to the CSS file link -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ timestamp }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,22 +27,29 @@
             <p>Your AI-powered plan for the week.</p>
         </div>
 
-        <!-- Week Navigation Tabs -->
+        {% if missed_workout %}
+        <div class="missed-workout-alert">
+            <h4>Missed a Session?</h4>
+            <p>It looks like you missed your <b>{{ missed_workout.name }}</b> workout for yesterday ({{ missed_workout.day }}). What would you like to do?</p>
+            <div class="missed-workout-controls">
+                <a href="{{ url_for('workout', day=missed_workout.day) }}" class="btn btn-secondary">Do Yesterday's Workout</a>
+                <button class="btn btn-primary" id="do-today-btn">Skip and Do Today's</button>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="week-tabs">
-            <!-- This will be populated by JavaScript -->
+            <!-- Populated by script.js -->
         </div>
 
-        <!-- Today's Workout Preview -->
         <div class="workout-preview-card">
             <h3 id="preview-title">Today's Workout: Loading...</h3>
             <ul id="exercise-list">
-                <!-- This will be populated by JavaScript -->
+                <!-- Populated by script.js -->
             </ul>
             <button id="start-workout-btn" class="btn btn-primary" disabled>Start Workout</button>
         </div>
     </main>
-
-    <!-- Append the timestamp to the JavaScript file link -->
     <script src="{{ url_for('static', filename='script.js') }}?v={{ timestamp }}"></script>
 </body>
 </html>

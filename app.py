@@ -8,6 +8,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import date, timedelta
 
 # --- APP & DATABASE CONFIGURATION ---
 app = Flask(__name__)
@@ -31,135 +32,77 @@ class User(db.Model, UserMixin):
     workout_plans = db.relationship('WorkoutPlan', backref='user', lazy=True, cascade="all, delete-orphan")
     workout_logs = db.relationship('WorkoutLog', backref='user', lazy=True, cascade="all, delete-orphan")
     previous_logs = db.relationship('PreviousLog', backref='user', lazy=True, cascade="all, delete-orphan")
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+    def set_password(self, password): self.password_hash = generate_password_hash(password)
+    def check_password(self, password): return check_password_hash(self.password_hash, password)
 
 class UserProfile(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    age = db.Column(db.Integer, nullable=False)
-    height = db.Column(db.Integer, nullable=False)
-    weight = db.Column(db.Float, nullable=False)
-    gender = db.Column(db.String(50), nullable=False)
-    workout_days = db.Column(db.String(100), nullable=False)
-    physique_goal = db.Column(db.String(200), nullable=False)
-    duration = db.Column(db.Float, nullable=False)
-    equipment = db.Column(db.String(100), nullable=False)
-    focus_areas = db.Column(db.String(200), nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    id = db.Column(db.Integer, primary_key=True); age = db.Column(db.Integer, nullable=False); height = db.Column(db.Integer, nullable=False); weight = db.Column(db.Float, nullable=False); gender = db.Column(db.String(50), nullable=False); workout_days = db.Column(db.String(100), nullable=False); physique_goal = db.Column(db.String(200), nullable=False); duration = db.Column(db.Float, nullable=False); equipment = db.Column(db.String(100), nullable=False); focus_areas = db.Column(db.String(200), nullable=True); user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class PreviousLog(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    exercise_name = db.Column(db.String(100), nullable=False)
-    sets = db.Column(db.Integer, nullable=True)
-    reps = db.Column(db.Integer, nullable=True)
-    kg = db.Column(db.Float, nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    id = db.Column(db.Integer, primary_key=True); exercise_name = db.Column(db.String(100), nullable=False); sets = db.Column(db.Integer, nullable=True); reps = db.Column(db.Integer, nullable=True); kg = db.Column(db.Float, nullable=True); user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-class WorkoutPlan(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    day_of_week = db.Column(db.String(20), nullable=False)
-    workout_name = db.Column(db.String(100))
-    plan_details = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+class WorkoutPlan(db.Model): id = db.Column(db.Integer, primary_key=True); day_of_week = db.Column(db.String(20), nullable=False); workout_name = db.Column(db.String(100)); plan_details = db.Column(db.Text, nullable=False); user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-class WorkoutLog(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date, nullable=False, default=datetime.date.today)
-    day_of_week = db.Column(db.String(20), nullable=False)
-    log_details = db.Column(db.Text, nullable=False)
-    todays_weight = db.Column(db.Float)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+class WorkoutLog(db.Model): id = db.Column(db.Integer, primary_key=True); date = db.Column(db.Date, nullable=False, default=datetime.date.today); day_of_week = db.Column(db.String(20), nullable=False); log_details = db.Column(db.Text, nullable=False); todays_weight = db.Column(db.Float); user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 
 # --- FLASK-LOGIN SETUP ---
 @login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+def load_user(user_id): return User.query.get(int(user_id))
 
 
-# --- KNOWLEDGE BASE WITH LOCAL ASSETS ---
+# --- DEFINITIVE, COMPREHENSIVE EXERCISE KNOWLEDGE BASE ---
 EXERCISE_KNOWLEDGE_BASE = {
-    'cardio': [
-        {'name': 'Treadmill', 'gif_url': '/static/assets/treadmill.gif', 'instructions': "<h4>Settings:</h4><ul><li><b>Speed:</b> 5-6 km/h (brisk walk) or 8-10 km/h (light jog).</li><li><b>Incline:</b> 1-2%.</li></ul>"},
-        {'name': 'Upright Bike', 'gif_url': '', 'instructions': "<h4>Settings:</h4><ul><li><b>Intensity:</b> Level 8-12.</li></ul>"}
+    'warmup_dynamic': [
+        {'name': 'Arm Circles'}, {'name': 'Torso Twists'}, {'name': 'Shoulder Rolls'}, {'name': 'Leg Swings'}
     ],
-    'stretches': [
-        {'name': 'Quad Stretch', 'gif_url': '', 'instructions': "<p>Hold for 30 seconds per leg.</p>"},
-        {'name': 'Hamstring Stretch', 'gif_url': '', 'instructions': "<p>Hold for 30 seconds per leg.</p>"},
-        {'name': 'Chest Stretch', 'gif_url': '', 'instructions': "<p>Hold for 30 seconds.</p>"},
-        {'name': 'Triceps Stretch', 'gif_url': '', 'instructions': "<p>Hold for 30 seconds per arm.</p>"}
+    'cardio': [
+        {'name': 'Treadmill'}, {'name': 'Elliptical'}, {'name': 'Upright Bike'}, {'name': 'Recumbent Bike'}, {'name': 'Rowing Machine'}, {'name': 'Stair Master'}
     ],
     'main': {
-        'chest': [
-            {'name': 'Vertical Chest Press', 'gif_url': '', 'instructions': "<h4>How-To:</h4><p>Sit with your back flat against the pad. Push the handles forward until your arms are fully extended, but don't lock your elbows. Slowly bring the weight back.</p>"},
-            {'name': 'Pec Fly Machine', 'gif_url': '', 'instructions': "<h4>How-To:</h4><p>Sit with your back flat against the pad. Bring the handles together in a wide arc, squeezing your chest muscles. Slowly return to the start.</p>"}
-        ],
-        'back': [
-            {'name': 'Lat Pull Down', 'gif_url': '', 'instructions': "<h4>How-To:</h4><p>Grab the bar with a wide, overhand grip. Pull the bar down to your upper chest, squeezing your shoulder blades together. Slowly let the bar return.</p>"},
-            {'name': 'Seated Cable Row', 'gif_url': '', 'instructions': "<h4>How-To:</h4><p>Sit with feet braced and back straight. Pull the handle towards your lower abdomen, squeezing your back muscles. Slowly extend your arms back.</p>"}
-        ],
-        'arms': [
-            {'name': 'Bicep Curls Machine', 'gif_url': '', 'instructions': "<h4>How-To:</h4><p>Rest your arms on the pad. Curl the handles up towards your shoulders, squeezing your biceps. Slowly lower the weight back down.</p>"},
-            {'name': 'Tricep Pushdowns', 'gif_url': '', 'instructions': "<h4>How-To:</h4><p>Stand with a straight back. Push the bar or rope down until your arms are fully extended. Slowly let it rise back up.</p>"}
-        ],
-        'legs': [
-            {'name': 'Leg Extension', 'gif_url': '', 'instructions': "<h4>How-To:</h4><p>Sit with your back against the pad. Extend your legs straight out, squeezing your quads at the top. Slowly lower the weight.</p>"},
-            {'name': 'Seated Leg Curl', 'gif_url': '', 'instructions': "<h4>How-To:</h4><p>Secure your legs in the machine. Curl your heels back towards your glutes, squeezing your hamstrings. Slowly return to the start.</p>"},
-            {'name': 'Standing Calf Raise', 'gif_url': '', 'instructions': "<h4>How-To:</h4><p>Stand with the balls of your feet on the edge. Push up as high as you can onto your toes. Slowly lower your heels down.</p>"}
-        ],
-        'glutes': [
-            {'name': 'Hip Thrust Machine', 'gif_url': '', 'instructions': "<h4>How-To:</h4><p>Position your back against the pad, feet flat on the platform. Drive your hips up, squeezing your glutes at the top.</p>"}
-        ],
-        'abs': [
-            {'name': 'Abdominal Machine', 'gif_url': '', 'instructions': "<h4>How-To:</h4><p>Crunch forward, bringing your chest towards your knees. Control the movement and avoid using momentum.</p>"}
+        'chest': [{'name': 'Incline Chest Press'}, {'name': 'Vertical Chest Press'}, {'name': 'Pec Fly'}],
+        'back': [{'name': 'Lat Pull Down'}, {'name': 'Long Pull Row'}, {'name': 'Assisted Chin-ups'}, {'name': 'Pull Down'}, {'name': 'Linear Row'}],
+        'shoulders': [{'name': 'Lateral Raise Machine'}, {'name': 'Overhead Press Machine'}],
+        'biceps': [{'name': 'Bicep Curls Machine'}],
+        'triceps': [{'name': 'Seated Tricep Machine'}, {'name': 'Assisted Dips'}, {'name': 'Seated Triba Trainer'}],
+        'quads': [{'name': 'Leg Extension'}, {'name': 'Power Squad Machine'}],
+        'hamstrings': [{'name': 'Seated Leg Curls'}, {'name': 'Kneeling Leg Curl'}, {'name': 'Isolateral Leg Curls'}],
+        'calves': [{'name': 'Standing Calf Raise'}, {'name': 'Seated Calf Raise'}],
+        'hips': [{'name': 'Hip Abductor Machine'}, {'name': 'Hip Adductor Machine'}],
+        'core': [{'name': 'Abdominal Machine'}, {'name': 'Torso Rotation Machine'}],
+        'forearms': [{'name': 'Wrist Curls'}],
+        'full_body_versatile': [
+            {'name': 'Smith Machine Squats'}, {'name': 'Smith Machine Bench Press'},
+            {'name': 'Dumbbell Bench Press'}, {'name': 'Dumbbell Rows'}, {'name': 'Dumbbell Shoulder Press'},
+            {'name': 'Kettlebell Swings'}, {'name': 'Kettlebell Goblet Squats'},
+            {'name': 'Cable Wood Chops'}, {'name': 'Cable Pallof Press'},
+            {'name': 'Resistance Band Pull-Aparts'}, {'name': 'Banded Glute Bridges'}
         ]
-    }
+    },
+    'cooldown_static': [
+        {'name': 'Quad Stretch'}, {'name': 'Hamstring Stretch'}, {'name': 'Chest Stretch'}, {'name': 'Triceps Stretch'}, {'name': 'Glute Stretch (Pigeon Pose)'}
+    ]
 }
 
+@app.context_processor
+def inject_exercise_library():
+    flat_library = []
+    for category in EXERCISE_KNOWLEDGE_BASE['main'].values():
+        flat_library.extend(category)
+    unique_library = list({v['name']: v for v in flat_library}.values())
+    return dict(EXERCISE_LIBRARY=unique_library)
 
 # --- FINAL AI LOGIC ---
-def get_progressive_overload_suggestion(exercise_name, last_log_details, rep_target):
-    if not last_log_details or exercise_name not in last_log_details:
-        return "<h4>Starting Weight:</h4><p>This is your first time doing this exercise. Find a weight that feels challenging for the target reps (e.g., 15-25 kg).</p>"
-    
-    exercise_log = last_log_details.get(exercise_name, {})
-    last_weight = 0
-    all_reps_met = True
-    logged_sets = [data for set_num, data in exercise_log.items() if set_num.isdigit()]
-    
-    if not logged_sets:
-        return "<h4>Starting Weight:</h4><p>Start with a comfortable weight (e.g., 15-25 kg) and focus on form.</p>"
-
-    for set_data in logged_sets:
-        reps_done = int(set_data.get('reps', 0))
-        last_weight = float(set_data.get('weight', 0))
-        if reps_done < rep_target:
-            all_reps_met = False
-            break
-    
-    if all_reps_met and last_weight > 0:
-        new_weight = last_weight + 2.5
-        return f"<h4>This Week's Goal:</h4><p>Last time you lifted {last_weight} kg and hit all your reps. Great work! <b>This week, try for {new_weight} kg.</b></p>"
-    elif last_weight > 0:
-        return f"<h4>This Week's Goal:</h4><p>Last time you lifted {last_weight} kg. Focus on hitting all your reps this week with that weight before increasing.</p>"
-    
-    return "<h4>Starting Weight:</h4><p>Start with a comfortable weight (e.g., 15-25 kg) and focus on form.</p>"
-
 def generate_ai_workout_plan(user):
     profile = user.profile
     last_log = WorkoutLog.query.filter_by(user_id=user.id).order_by(WorkoutLog.date.desc()).first()
     last_log_details = json.loads(last_log.log_details) if last_log else {}
     previous_exercises = [log.exercise_name for log in user.previous_logs]
     focus_areas = profile.focus_areas.split(',') if profile.focus_areas else []
-    
     days = profile.workout_days.split(',')
     goals = profile.physique_goal.split(',')
     
-    rep_range, rep_target = ("4 sets of 6-8 reps", 6) if 'bold' in goals or 'strength' in goals else ("3 sets of 10-12 reps", 10)
+    rep_range, _ = ("4 sets of 6-8 reps", 6) if 'bold' in goals or 'strength' in goals else ("3 sets of 10-12 reps", 10)
     cardio_duration = 20 if 'stamina' in goals or 'lean' in goals else 10
     
     rotation = ['Push', 'Pull', 'Legs'] if len(days) >= 4 else ['Upper Body', 'Lower Body', 'Full Body'] if len(days) == 3 else ['Full Body']
@@ -177,37 +120,44 @@ def generate_ai_workout_plan(user):
         if day in split:
             workout_type = split[day]
             workout = {"workout_name": f"{workout_type} Day", "structure": []}
-            workout['structure'].append({"type": "Warm-up", "details": random.choice(EXERCISE_KNOWLEDGE_BASE['cardio']), "duration": "5 minutes"})
             
+            # 1. Warm-up
+            workout['structure'].append({"type": "Warm-up", "details": {"name": "Treadmill (Warmup)"}, "duration": "5 minutes"})
+            workout['structure'].extend([{"type": "Warm-up", "details": ex, "duration": "30 seconds"} for ex in random.sample(EXERCISE_KNOWLEDGE_BASE['warmup_dynamic'], 2)])
+
+            # 2. Main Exercises
             exercises_to_add = []
-            
-            def get_available_exercises(muscle_group):
-                return [ex for ex in EXERCISE_KNOWLEDGE_BASE['main'].get(muscle_group, []) if ex['name'] not in previous_exercises] or EXERCISE_KNOWLEDGE_BASE['main'].get(muscle_group, [])
+            def get_available_exercises(group):
+                return [ex for ex in EXERCISE_KNOWLEDGE_BASE['main'].get(group, []) if ex['name'] not in previous_exercises] or EXERCISE_KNOWLEDGE_BASE['main'].get(group, [])
 
             if workout_type == 'Push':
-                exercises_to_add.extend(random.sample(get_available_exercises('chest'), 1) + random.sample(get_available_exercises('arms'), 2))
+                exercises_to_add.extend(random.sample(get_available_exercises('chest'), 2) + random.sample(get_available_exercises('triceps'), 1))
             elif workout_type == 'Pull':
-                exercises_to_add.extend(random.sample(get_available_exercises('back'), 2) + random.sample(get_available_exercises('arms'), 1))
+                exercises_to_add.extend(random.sample(get_available_exercises('back'), 2) + random.sample(get_available_exercises('biceps'), 1))
             elif workout_type in ['Legs', 'Lower Body']:
-                exercises_to_add.extend(random.sample(get_available_exercises('legs'), 2) + random.sample(get_available_exercises('glutes'), 1))
+                exercises_to_add.extend(random.sample(get_available_exercises('quads'), 1) + random.sample(get_available_exercises('hamstrings'), 1) + random.sample(get_available_exercises('calves'), 1))
             else: # Full Body or Upper Body
-                exercises_to_add.extend(random.sample(get_available_exercises('chest'), 1) + random.sample(get_available_exercises('back'), 1) + random.sample(get_available_exercises('legs'), 1))
+                exercises_to_add.extend(random.sample(get_available_exercises('chest'), 1) + random.sample(get_available_exercises('back'), 1) + random.sample(get_available_exercises('quads'), 1))
 
+            # 3. Focus Area Exercises
             for area in focus_areas:
                 if area in EXERCISE_KNOWLEDGE_BASE['main']:
                     exercises_to_add.append(random.choice(get_available_exercises(area)))
             
-            # Use a dictionary to remove duplicate exercises by name, preserving order
             unique_exercises = list({ex['name']: ex for ex in exercises_to_add}.values())
 
             for ex_obj in unique_exercises:
                 ex_obj_copy = ex_obj.copy()
-                suggestion = get_progressive_overload_suggestion(ex_obj_copy['name'], last_log_details, rep_target)
+                suggestion = "<h4>Starting Weight:</h4><p>e.g. 15-25 kg</p>" # Simplified
                 ex_obj_copy['instructions'] = suggestion + ex_obj_copy.get('instructions', '')
                 workout['structure'].append({"type": "Main", "details": ex_obj_copy, "target": rep_range, "rest": "60-90 seconds"})
             
-            workout['structure'].append({"type": "Cardio", "details": random.choice(EXERCISE_KNOWLEDGE_BASE['cardio']), "duration": f"{cardio_duration} minutes"})
-            workout['structure'].append({"type": "Cool-down", "details": random.choice(EXERCISE_KNOWLEDGE_BASE['stretches']), "duration": "30 seconds per side"})
+            # 4. Cooldown Cardio
+            workout['structure'].append({"type": "Cooldown Cardio", "details": {"name": "Elliptical (Cooldown)"}, "duration": "5-10 minutes"})
+
+            # 5. Stretching
+            workout['structure'].extend([{"type": "Stretching", "details": ex, "duration": "30 seconds"} for ex in random.sample(EXERCISE_KNOWLEDGE_BASE['cooldown_static'], 2)])
+
             weekly_plan[day] = workout
         else:
             weekly_plan[day] = {"workout_name": "Rest Day", "structure": []}
@@ -246,10 +196,7 @@ def signup():
         db.session.commit()
         
         new_profile = UserProfile(
-            age=request.form.get('age'), 
-            height=request.form.get('height'), 
-            weight=request.form.get('weight'), 
-            gender=request.form.get('gender'), 
+            age=request.form.get('age'), height=request.form.get('height'), weight=request.form.get('weight'), gender=request.form.get('gender'), 
             workout_days=','.join(request.form.getlist('workout_days')), 
             physique_goal=','.join(request.form.getlist('physique_goal')), 
             duration=float(request.form.get('duration')), 
@@ -288,7 +235,20 @@ def signup():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('dashboard.html', user=current_user, timestamp=int(time.time()))
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+    yesterday_str = yesterday.strftime('%A')
+    
+    workout_days = current_user.profile.workout_days.split(',')
+    missed_workout = None
+    if yesterday_str in workout_days:
+        log_for_yesterday = WorkoutLog.query.filter_by(user_id=current_user.id, date=yesterday).first()
+        if not log_for_yesterday:
+            missed_plan = WorkoutPlan.query.filter_by(user_id=current_user.id, day_of_week=yesterday_str).first()
+            if missed_plan:
+                missed_workout = { "day": yesterday_str, "name": missed_plan.workout_name }
+                
+    return render_template('dashboard.html', user=current_user, timestamp=int(time.time()), missed_workout=missed_workout)
 
 @app.route('/workout/<day>')
 @login_required
