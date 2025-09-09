@@ -460,3 +460,34 @@ a:hover {
     border: 1px solid var(--border-color);
 }
 
+
+/* --- Signup Page Enhancements --- */
+.form-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: -10px;
+    margin-bottom: 20px;
+}
+.exercise-list {
+    margin-top: 20px;
+}
+.exercise-item {
+    background-color: var(--dark-bg);
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+.exercise-item label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+}
+.log-inputs {
+    display: none; /* Hidden by default */
+    gap: 10px;
+    margin-top: 10px;
+}
+.log-inputs input {
+    text-align: center;
+}
