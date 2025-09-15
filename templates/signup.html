@@ -5,50 +5,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Fitness - Create Account</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="auth-container">
         <div class="auth-card">
-            <h1>Create Your Profile</h1>
-            <p>Let's get some information to personalize your fitness journey.</p>
+            <h1>Create Your Fitness Profile</h1>
+            <p>We’ll ask a few questions to make your workouts fun and easy. Don’t worry — it’s simple, like following steps in a game!</p>
             
             <form action="/signup" method="post" class="auth-form">
+                <!-- Step 1: Account Info -->
                 <div class="form-step">
                     <h3>Account Info</h3>
-                    <div class="form-group"><label for="username">Username</label><input type="text" id="username" name="username" required></div>
-                    <div class="form-group"><label for="password">Password</label><input type="password" id="password" name="password" required></div>
+                    <p>Pick a username and password. Keep it safe!</p>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" placeholder="Your username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Your password" required>
+                    </div>
                 </div>
+
+                <!-- Step 2: Personal Details -->
                 <div class="form-step">
                     <h3>Personal Details</h3>
-                    <div class="form-group"><label for="age">Age</label><input type="number" id="age" name="age" required></div>
-                    <div class="form-group"><label for="height">Height (cm)</label><input type="number" id="height" name="height" required></div>
-                    <div class="form-group"><label for="weight">Starting Weight (kg)</label><input type="number" step="0.1" id="weight" name="weight" required></div>
-                    <div class="form-group"><label for="gender">Gender</label><select id="gender" name="gender" required><option value="" disabled selected>Select...</option><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select></div>
-                </div>
-                
-                <div class="form-step">
-                    <h3>This Week's Fitness Plan</h3>
-                    <div class="form-group"><label>Which days can you work out?</label><div class="checkbox-group day-selector"><input type="checkbox" id="day-mon" name="workout_days" value="Monday"><label for="day-mon">Mon</label><input type="checkbox" id="day-tue" name="workout_days" value="Tuesday"><label for="day-tue">Tue</label><input type="checkbox" id="day-wed" name="workout_days" value="Wednesday"><label for="day-wed">Wed</label><input type="checkbox" id="day-thu" name="workout_days" value="Thursday"><label for="day-thu">Thu</label><input type="checkbox" id="day-fri" name="workout_days" value="Friday"><label for="day-fri">Fri</label><input type="checkbox" id="day-sat" name="workout_days" value="Saturday"><label for="day-sat">Sat</label><input type="checkbox" id="day-sun" name="workout_days" value="Sunday"><label for="day-sun">Sun</label></div></div>
-                    <div class="form-group"><label>What are your physique goals?</label><div class="checkbox-group"><input type="checkbox" id="goal1" name="physique_goal" value="athletic"><label for="goal1">Athletic</label><input type="checkbox" id="goal2" name="physique_goal" value="bold"><label for="goal2">Bold/Bulky</label><input type="checkbox" id="goal3" name="physique_goal" value="lean"><label for="goal3">Lean Physique</label><input type="checkbox" id="goal4" name="physique_goal" value="stamina"><label for="goal4">Stamina/Endurance</label><input type="checkbox" id="goal5" name="physique_goal" value="strength"><label for="goal5">Pure Strength</label></div></div>
-                    <div class="form-group"><label for="duration">How long can you train per session?</label><select id="duration" name="duration" required><option value="0.75">45 Minutes</option><option value="1.0" selected>1 Hour</option><option value="1.5">1 Hour 30 Minutes</option><option value="2.0">2 Hours</option></select></div>
-                    <div class="form-group"><label>Equipment Access</label><select id="equipment" name="equipment" required><option value="both">Machines & Free Weights</option><option value="machine">Machines Only</option><option value="none">No Equipment</option></select></div>
+                    <p>Tell us a bit about yourself so we can make the perfect plan for you!</p>
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" name="age" placeholder="e.g., 25" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="height">Height (cm)</label>
+                        <input type="number" id="height" name="height" placeholder="e.g., 170" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="weight">Starting Weight (kg)</label>
+                        <input type="number" step="0.1" id="weight" name="weight" placeholder="e.g., 70.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" name="gender" required>
+                            <option value="" disabled selected>Select...</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
                 </div>
 
+                <!-- Step 3: Workout Preferences -->
+                <div class="form-step">
+                    <h3>This Week’s Fitness Plan</h3>
+                    <p>Pick the days you can exercise and your goals. We’ll guide you like a coach telling you exactly what to do!</p>
+                    <div class="form-group">
+                        <label>Which days can you work out?</label>
+                        <div class="checkbox-group day-selector">
+                            {% for day in ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] %}
+                            <input type="checkbox" id="day-{{day[:3].lower()}}" name="workout_days" value="{{day}}">
+                            <label for="day-{{day[:3].lower()}}">{{day[:3]}}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>What are your physique goals?</label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="goal1" name="physique_goal" value="athletic">
+                            <label for="goal1">Athletic (fit and strong)</label>
+                            <input type="checkbox" id="goal2" name="physique_goal" value="bold">
+                            <label for="goal2">Bold/Bulky (muscles grow big)</label>
+                            <input type="checkbox" id="goal3" name="physique_goal" value="lean">
+                            <label for="goal3">Lean Physique (toned and slim)</label>
+                            <input type="checkbox" id="goal4" name="physique_goal" value="stamina">
+                            <label for="goal4">Stamina/Endurance (run and last longer)</label>
+                            <input type="checkbox" id="goal5" name="physique_goal" value="strength">
+                            <label for="goal5">Pure Strength (lift heavy stuff)</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="duration">How long can you train per session?</label>
+                        <select id="duration" name="duration" required>
+                            <option value="0.75">45 Minutes</option>
+                            <option value="1.0" selected>1 Hour</option>
+                            <option value="1.5">1 Hour 30 Minutes</option>
+                            <option value="2.0">2 Hours</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Equipment Access</label>
+                        <select id="equipment" name="equipment" required>
+                            <option value="both">Machines & Free Weights</option>
+                            <option value="machine">Machines Only</option>
+                            <option value="none">No Equipment</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Step 4: Focus Areas -->
                 <div class="form-step">
                     <h3>Focus Areas (Optional)</h3>
-                    <div class="form-group"><label>Which body parts do you want to focus on?</label><div class="checkbox-group"><input type="checkbox" id="focus1" name="focus_areas" value="core"><label for="focus1">Abs/Core</label><input type="checkbox" id="focus2" name="focus_areas" value="chest"><label for="focus2">Chest</label><input type="checkbox" id="focus3" name="focus_areas" value="biceps"><label for="focus3">Biceps</label><input type="checkbox" id="focus4" name="focus_areas" value="triceps"><label for="focus4">Triceps</label><input type="checkbox" id="focus5" name="focus_areas" value="quads"><label for="focus5">Quads</label></div></div>
+                    <p>Pick body parts you want extra focus on. We’ll show simple ways to train them!</p>
+                    <div class="form-group">
+                        <label>Focus Areas</label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="focus1" name="focus_areas" value="core"><label for="focus1">Abs/Core</label>
+                            <input type="checkbox" id="focus2" name="focus_areas" value="chest"><label for="focus2">Chest</label>
+                            <input type="checkbox" id="focus3" name="focus_areas" value="biceps"><label for="focus3">Biceps</label>
+                            <input type="checkbox" id="focus4" name="focus_areas" value="triceps"><label for="focus4">Triceps</label>
+                            <input type="checkbox" id="focus5" name="focus_areas" value="quads"><label for="focus5">Quads</label>
+                        </div>
+                    </div>
                 </div>
 
+                <!-- Step 5: Previous Logs -->
                 <div class="form-step" id="previous-log-section">
-                    <h3>Log Last Week's Workout (Optional)</h3>
-                    <p class="form-subtitle">Tell the AI what you did on one day last week to improve its first suggestion.</p>
-                    <div class="form-group"><label>Select a day you worked out last week:</label><div class="checkbox-group day-selector"><input type="checkbox" id="prev-mon" name="prev_day" value="Monday"><label for="prev-mon">Mon</label><input type="checkbox" id="prev-tue" name="prev_day" value="Tuesday"><label for="prev-tue">Tue</label><input type="checkbox" id="prev-wed" name="prev_day" value="Wednesday"><label for="prev-wed">Wed</label><input type="checkbox" id="prev-thu" name="prev_day" value="Thursday"><label for="prev-thu">Thu</label><input type="checkbox" id="prev-fri" name="prev_day" value="Friday"><label for="prev-fri">Fri</label><input type="checkbox" id="prev-sat" name="prev_day" value="Saturday"><label for="prev-sat">Sat</label><input type="checkbox" id="prev-sun" name="prev_day" value="Sunday"><label for="prev-sun">Sun</label></div></div>
-                    
+                    <h3>Log Last Week’s Workout (Optional)</h3>
+                    <p>If you did any workouts last week, tell us. This helps your AI plan get smarter!</p>
+                    <div class="form-group">
+                        <label>Select a day you worked out last week:</label>
+                        <div class="checkbox-group day-selector">
+                            {% for day in ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] %}
+                            <input type="checkbox" id="prev-{{day[:3].lower()}}" name="prev_day" value="{{day}}">
+                            <label for="prev-{{day[:3].lower()}}">{{day[:3]}}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
                     <div id="exercise-list-dynamic" class="exercise-list" style="display: none;">
                         {% for ex in EXERCISE_LIBRARY|sort(attribute='name') %}
                         <div class="exercise-item">
-                            <label><input type="checkbox" class="exercise-checkbox" name="prev_exercise" value="{{ ex.name }}"> {{ ex.name }}</label>
+                            <label><input type="checkbox" class="exercise-checkbox" name="prev_exercise" value="{{ ex.name }}"> {{ ex.name }} — <small>Check if you did this!</small></label>
                             <div class="log-inputs">
                                 <input type="number" name="prev_{{ ex.name }}_sets" placeholder="Sets">
                                 <input type="number" name="prev_{{ ex.name }}_reps" placeholder="Reps">
@@ -58,7 +149,7 @@
                         {% endfor %}
                     </div>
                 </div>
-                
+
                 <button type="submit" class="btn btn-primary" disabled>Please Fill Out Your Profile</button>
             </form>
         </div>

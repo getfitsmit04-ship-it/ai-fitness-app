@@ -1,49 +1,124 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const weightChartCanvas = document.getElementById('weightChart');
-    const volumeChartCanvas = document.getElementById('volumeChart');
+/* static/js/performance.js
+   Performance tracking logic for AI Fitness
+   Uses Chart.js to display user weight, total workout volume, and exercise progression
+*/
+
+(function () {
+    'use strict';
+
+    // ----- DOM Elements -----
+    const weightChartCtx = document.getElementById('weightChart');
+    const volumeChartCtx = document.getElementById('volumeChart');
     const exerciseChartsContainer = document.getElementById('exercise-charts-container');
 
-    Chart.defaults.color = '#A0A0A0';
-    Chart.defaults.borderColor = '#333333';
+    // ----- State -----
+    let performanceData = null;
 
+    // ----- Fetch Performance Data -----
     async function fetchPerformanceData() {
         try {
             const response = await fetch('/api/get_performance_data');
-            if (!response.ok) throw new Error('Failed to fetch performance data');
+            if (!response.ok) throw new Error('Failed to fetch performance data.');
             const data = await response.json();
-            
-            if (data.weight_logs && data.weight_logs.labels.length > 0) createWeightChart(data.weight_logs);
-            else weightChartCanvas.parentElement.innerHTML += "<p>No bodyweight data logged yet.</p>";
-
-            if (data.volume_logs && data.volume_logs.labels.length > 0) createVolumeChart(data.volume_logs);
-            else volumeChartCanvas.parentElement.innerHTML += "<p>No workout volume data yet.</p>";
-
-            if (data.exercise_progression) createExerciseCharts(data.exercise_progression);
-
-        } catch (error) {
-            console.error("Error fetching data:", error);
-            weightChartCanvas.parentElement.innerHTML = "<p>Could not load chart data.</p>";
+            performanceData = data;
+            renderCharts();
+        } catch (err) {
+            console.error(err);
         }
     }
 
-    function createWeightChart(chartData) {
-        new Chart(weightChartCanvas, { type: 'line', data: { labels: chartData.labels, datasets: [{ label: 'Bodyweight (kg)', data: chartData.data, borderColor: '#007BFF', backgroundColor: 'rgba(0, 123, 255, 0.1)', fill: true, tension: 0.1 }] }, options: { scales: { y: { beginAtZero: false } } } });
-    }
-    function createVolumeChart(chartData) {
-        new Chart(volumeChartCanvas, { type: 'bar', data: { labels: chartData.labels, datasets: [{ label: 'Total Volume (kg)', data: chartData.data, backgroundColor: 'rgba(0, 123, 255, 0.7)', borderColor: '#007BFF', borderWidth: 1 }] }, options: { scales: { y: { beginAtZero: true } } } });
-    }
-    function createExerciseCharts(progressionData) {
-        for (const exerciseName in progressionData) {
-            if (progressionData[exerciseName].data.length > 1) { // Only show charts for exercises with progress
-                const chartData = progressionData[exerciseName];
-                const container = document.createElement('div');
-                container.className = 'chart-container';
-                container.innerHTML = `<h3>${exerciseName} Progress</h3><p class="chart-subtitle">Estimated 1-Rep Max (e1RM)</p><canvas id="chart-${exerciseName.replace(/\s+/g, '')}"></canvas>`;
-                exerciseChartsContainer.appendChild(container);
-                const canvas = document.getElementById(`chart-${exerciseName.replace(/\s+/g, '')}`);
-                new Chart(canvas, { type: 'line', data: { labels: chartData.labels, datasets: [{ label: 'e1RM (kg)', data: chartData.data, borderColor: '#28a745', backgroundColor: 'rgba(40, 167, 69, 0.1)', fill: true, tension: 0.1 }] }, options: { scales: { y: { beginAtZero: false } } } });
-            }
+    // ----- Render Charts -----
+    function renderCharts() {
+        if (!performanceData) return;
+
+        // 1. Bodyweight Chart
+        if (weightChartCtx && performanceData.weight_logs.labels.length) {
+            new Chart(weightChartCtx, {
+                type: 'line',
+                data: {
+                    labels: performanceData.weight_logs.labels,
+                    datasets: [{
+                        label: 'Weight (kg)',
+                        data: performanceData.weight_logs.data,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59,130,246,0.2)',
+                        tension: 0.3,
+                        fill: true,
+                        pointRadius: 5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: true } },
+                    scales: {
+                        y: { beginAtZero: false },
+                        x: { ticks: { maxRotation: 45, minRotation: 0 } }
+                    }
+                }
+            });
+        }
+
+        // 2. Total Workout Volume Chart
+        if (volumeChartCtx && performanceData.volume_logs.labels.length) {
+            new Chart(volumeChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: performanceData.volume_logs.labels,
+                    datasets: [{
+                        label: 'Total Volume (kg)',
+                        data: performanceData.volume_logs.data,
+                        backgroundColor: '#f97316'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: true } },
+                    scales: {
+                        y: { beginAtZero: true },
+                        x: { ticks: { maxRotation: 45, minRotation: 0 } }
+                    }
+                }
+            });
+        }
+
+        // 3. Individual Exercise Charts
+        if (exerciseChartsContainer && performanceData.exercise_progression) {
+            exerciseChartsContainer.innerHTML = '';
+            Object.keys(performanceData.exercise_progression).forEach(exercise => {
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('exercise-chart-card');
+                const canvas = document.createElement('canvas');
+                canvas.id = `chart-${exercise.replace(/\s+/g, '-')}`;
+                wrapper.innerHTML = `<h4>${exercise}</h4>`;
+                wrapper.appendChild(canvas);
+                exerciseChartsContainer.appendChild(wrapper);
+
+                const exData = performanceData.exercise_progression[exercise];
+                new Chart(canvas.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: exData.labels,
+                        datasets: [{
+                            label: 'Estimated 1RM (kg)',
+                            data: exData.data,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16,185,129,0.2)',
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: true } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            });
         }
     }
-    if (weightChartCanvas) fetchPerformanceData();
-});
+
+    // ----- Initialize -----
+    document.addEventListener('DOMContentLoaded', fetchPerformanceData);
+
+})();

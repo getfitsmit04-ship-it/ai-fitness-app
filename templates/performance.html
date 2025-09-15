@@ -5,33 +5,115 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Performance - AI Fitness</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ timestamp }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header class="main-header">
         <div class="container">
             <h1 class="logo">AI.FIT</h1>
-            <nav><a href="/dashboard">Dashboard</a><a href="/performance" class="active">Performance</a><a href="/logout">Logout</a></nav>
+            <nav>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/performance" class="active">Performance</a>
+                <a href="/logout">Logout</a>
+            </nav>
         </div>
     </header>
+
     <main class="container">
         <div class="dashboard-header">
             <h2>Your Progress Overview</h2>
-            <p>Track your gains and stay motivated.</p>
+            <p>See how your body and strength are improving over time! 📈</p>
         </div>
+
+        <!-- Bodyweight Chart -->
         <div class="chart-container">
             <h3>Bodyweight Over Time</h3>
+            <p>Track how your weight changes. It's normal to go up or down a little!</p>
             <canvas id="weightChart"></canvas>
         </div>
+
+        <!-- Total Volume Chart -->
         <div class="chart-container">
             <h3>Total Workout Volume (kg)</h3>
-            <p class="chart-subtitle">Volume = Sets x Reps x Weight</p>
+            <p>Volume = Sets × Reps × Weight. Higher means stronger! 💪</p>
             <canvas id="volumeChart"></canvas>
         </div>
-        <!-- Container for individual exercise charts -->
+
+        <!-- Individual Exercise Charts -->
         <div id="exercise-charts-container"></div>
     </main>
-    <script src="{{ url_for('static', filename='performance.js') }}?v={{ timestamp }}"></script>
+
+    <script>
+        async function fetchPerformanceData() {
+            const res = await fetch('/api/get_performance_data');
+            const data = await res.json();
+            return data;
+        }
+
+        function createLineChart(ctx, labels, data, title, color) {
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: title,
+                        data: data,
+                        borderColor: color,
+                        backgroundColor: color + '33',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        async function renderCharts() {
+            const performanceData = await fetchPerformanceData();
+
+            // Bodyweight chart
+            const weightCtx = document.getElementById('weightChart').getContext('2d');
+            createLineChart(weightCtx, performanceData.weight_logs.labels, performanceData.weight_logs.data, 'Bodyweight (kg)', 'rgba(75,192,192,1)');
+
+            // Total volume chart
+            const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+            createLineChart(volumeCtx, performanceData.volume_logs.labels, performanceData.volume_logs.data, 'Total Volume (kg)', 'rgba(255,99,132,1)');
+
+            // Exercise progression charts
+            const container = document.getElementById('exercise-charts-container');
+            for (const [exercise, chartData] of Object.entries(performanceData.exercise_progression)) {
+                const div = document.createElement('div');
+                div.className = 'chart-container';
+                div.innerHTML = `<h3>${exercise} Strength Progression</h3><canvas id="chart-${exercise}"></canvas>`;
+                container.appendChild(div);
+
+                const ctx = document.getElementById(`chart-${exercise}`).getContext('2d');
+                createLineChart(ctx, chartData.labels, chartData.data, `${exercise} Estimated 1RM`, 'rgba(54,162,235,1)');
+            }
+        }
+
+        renderCharts();
+    </script>
 </body>
 </html>

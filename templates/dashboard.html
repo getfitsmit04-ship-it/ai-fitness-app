@@ -24,13 +24,14 @@
     <main class="container">
         <div class="dashboard-header">
             <h2>Welcome back, {{ user.username }}!</h2>
-            <p>Your AI-powered plan for the week.</p>
+            <p>Your AI-powered plan for the week. Don’t worry — we’ll show you every step, like a friendly coach!</p>
         </div>
 
+        <!-- Missed Workout Alert -->
         {% if missed_workout %}
         <div class="missed-workout-alert">
-            <h4>Missed a Session?</h4>
-            <p>It looks like you missed your <b>{{ missed_workout.name }}</b> workout for yesterday ({{ missed_workout.day }}). What would you like to do?</p>
+            <h4>Oops! You missed a workout yesterday.</h4>
+            <p>You missed <b>{{ missed_workout.name }}</b> on {{ missed_workout.day }}. No worries, you can:</p>
             <div class="missed-workout-controls">
                 <a href="{{ url_for('workout', day=missed_workout.day) }}" class="btn btn-secondary">Do Yesterday's Workout</a>
                 <button class="btn btn-primary" id="do-today-btn">Skip and Do Today's</button>
@@ -38,10 +39,14 @@
         </div>
         {% endif %}
 
+        <!-- Week Tabs -->
         <div class="week-tabs">
-            <!-- Populated by script.js -->
+            {% for day in ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] %}
+            <button class="week-tab" data-day="{{ day }}">{{ day[:3] }}</button>
+            {% endfor %}
         </div>
 
+        <!-- Workout Preview Card -->
         <div class="workout-preview-card">
             <h3 id="preview-title">Today's Workout: Loading...</h3>
             <ul id="exercise-list">
@@ -49,7 +54,69 @@
             </ul>
             <button id="start-workout-btn" class="btn btn-primary" disabled>Start Workout</button>
         </div>
+
+        <!-- How-to Instructions Section -->
+        <div id="instructions-panel" class="instructions-panel">
+            <h3>How to do each exercise</h3>
+            <p>Don’t worry — we explain like you’re 5! Follow along slowly and carefully. Your muscles will thank you!</p>
+            <ul id="exercise-instructions">
+                <!-- Populated by script.js -->
+            </ul>
+        </div>
     </main>
-    <script src="{{ url_for('static', filename='script.js') }}?v={{ timestamp }}"></script>
+
+    <script>
+        // Inject weekly plan from Flask backend
+        const userPlans = {{ user.workout_plans | tojson }};
+        const weekDays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
+        function renderWorkout(day) {
+            const plan = userPlans.find(p => p.day_of_week === day);
+            const titleEl = document.getElementById('preview-title');
+            const listEl = document.getElementById('exercise-list');
+            const instructionsEl = document.getElementById('exercise-instructions');
+
+            if (!plan) {
+                titleEl.textContent = "Rest Day! 🎉";
+                listEl.innerHTML = "<li>Take a break, stretch gently, and drink water!</li>";
+                instructionsEl.innerHTML = "";
+                return;
+            }
+
+            titleEl.textContent = plan.workout_name;
+            listEl.innerHTML = "";
+            instructionsEl.innerHTML = "";
+
+            const structure = JSON.parse(plan.plan_details).structure;
+
+            structure.forEach((step, index) => {
+                const exercise = step.details;
+                const stepName = exercise.name || step.type;
+                const durationOrReps = step.duration || step.target || "";
+                const rest = step.rest ? ` (Rest: ${step.rest})` : "";
+
+                // List item
+                const li = document.createElement('li');
+                li.innerHTML = `<b>${stepName}</b> — ${durationOrReps}${rest}`;
+                listEl.appendChild(li);
+
+                // Instructions
+                const instrLi = document.createElement('li');
+                instrLi.innerHTML = `<b>${stepName}:</b> ${exercise.instructions || "Follow the movement slowly. Imagine you are playing a game and move gently."}`;
+                instructionsEl.appendChild(instrLi);
+            });
+        }
+
+        // Initial render for today
+        const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+        renderWorkout(today);
+
+        // Week tab clicks
+        document.querySelectorAll('.week-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                renderWorkout(btn.dataset.day);
+            });
+        });
+    </script>
 </body>
 </html>
