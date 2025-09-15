@@ -84,50 +84,44 @@ def load_user(user_id):
 
 # --- DEFINITIVE, COMPREHENSIVE KNOWLEDGE BASE WITH INSTRUCTIONS ---
 EXERCISE_KNOWLEDGE_BASE = {
-    'warmup_dynamic': [
-        {'name': 'Arm Circles', 'instructions': "<p>20 seconds forward, 20 backward.</p>"},
-        {'name': 'Torso Twists', 'instructions': "<p>30 seconds, gentle and controlled.</p>"},
-        {'name': 'Shoulder Rolls', 'instructions': "<p>20 seconds forward, 20 backward.</p>"},
-        {'name': 'Leg Swings', 'instructions': "<p>15 swings per leg, forward/backward and side-to-side.</p>"}
-    ],
-    'cardio': [
-        {'name': 'Treadmill', 'instructions': "<h4>Settings:</h4><ul><li><b>Speed:</b> 5-6 km/h (walk) or 8-10 km/h (jog).</li><li><b>Incline:</b> 1-2%.</li></ul>"},
-        {'name': 'Elliptical', 'instructions': "<h4>Settings:</h4><ul><li><b>Resistance:</b> 5-10.</li><li><b>Pace:</b> Keep a steady, challenging pace.</li></ul>"}
-    ],
-    'main': {
-        'chest': [
-            {'name': 'Incline Chest Press', 'instructions': "<h4>How-To:</h4><p>Focus on squeezing your upper chest at the top of the movement.</p>"},
-            {'name': 'Vertical Chest Press', 'instructions': "<h4>How-To:</h4><p>Keep your back flat on the pad and don't lock your elbows.</p>"},
-            {'name': 'Pec Fly', 'instructions': "<h4>How-To:</h4><p>Use a wide arc and squeeze your chest muscles together.</p>"}
-        ],
-        'back': [
-            {'name': 'Lat Pull Down', 'instructions': "<h4>How-To:</h4><p>Pull the bar to your upper chest, not your stomach.</p>"},
-            {'name': 'Long Pull Row', 'instructions': "<h4>How-To:</h4><p>Pull with your back and biceps, keeping your torso still.</p>"}
-        ],
-        'shoulders': [
-            {'name': 'Lateral Raise Machine', 'instructions': "<h4>How-To:</h4><p>Raise the pads to shoulder height. Avoid shrugging.</p>"},
-            {'name': 'Overhead Press Machine', 'instructions': "<h4>How-To:</h4><p>Press straight up without arching your back excessively.</p>"}
-        ],
-        'biceps': [ {'name': 'Bicep Curls Machine', 'instructions': "<h4>How-To:</h4><p>Keep your elbows locked in place and focus on the squeeze.</p>"} ],
-        'triceps': [ {'name': 'Seated Tricep Machine', 'instructions': "<h4>How-To:</h4><p>Extend your arms fully, focusing on the tricep contraction.</p>"} ],
-        'quads': [ {'name': 'Leg Extension', 'instructions': "<h4>How-To:</h4><p>Extend your legs fully and control the weight on the way down.</p>"} ],
-        'hamstrings': [ {'name': 'Seated Leg Curls', 'instructions': "<h4>How-To:</h4><p>Curl the weight smoothly, focusing on your hamstrings.</p>"} ],
-        'calves': [ {'name': 'Standing Calf Raise', 'instructions': "<h4>How-To:</h4><p>Push up as high as possible on your toes, then get a deep stretch at the bottom.</p>"} ],
-        'core': [ {'name': 'Abdominal Machine', 'instructions': "<h4>How-To:</h4><p>Crunch with your abs, not by pulling with your head or arms.</p>"} ]
+    'warmup': {
+        'cardio': [{'name': 'Treadmill Walk/Jog', 'instructions': "<h4>Settings:</h4><p>5 min. Incline: 1-2. Speed: 5-6 km/h.</p>"}],
+        'mobility': [{'name': 'Arm Circles', 'instructions': "<p>20 seconds forward, 20 backward.</p>"}, {'name': 'Torso Twists', 'instructions': "<p>30 seconds, gentle.</p>"}, {'name': 'Leg Swings', 'instructions': "<p>15 swings per leg, forward and side.</p>"}],
+        'activation': [{'name': 'Band Pull-Aparts', 'instructions': "<p>Squeeze your shoulder blades together.</p>"}, {'name': 'Glute Bridges', 'instructions': "<p>Squeeze your glutes at the top.</p>"}, {'name': 'Plank', 'instructions': "<p>Keep your body in a straight line.</p>"}]
     },
-    'cooldown_static': [
-        {'name': 'Quad Stretch', 'instructions': "<p>Hold for 30 seconds per leg.</p>"},
-        {'name': 'Hamstring Stretch', 'instructions': "<p>Hold for 30 seconds per leg.</p>"},
-        {'name': 'Chest Stretch', 'instructions': "<p>Hold for 30 seconds.</p>"},
-        {'name': 'Triceps Stretch', 'instructions': "<p>Hold for 30 seconds per arm.</p>"}
-    ]
+    'main_lifts': {
+        'chest': [{'name': 'Incline Chest Press', 'instructions': "<h4>How-To:</h4><p>Focus on squeezing your upper chest at the top of the movement.</p>"}],
+        'back': [{'name': 'Long Pull Row', 'instructions': "<h4>How-To:</h4><p>Pull with your back and biceps, keeping your torso still.</p>"}],
+        'legs': [{'name': 'Power Squad Machine', 'instructions': "<h4>How-To:</h4><p>Go deep, keeping your back straight and knees tracking over your toes.</p>"}]
+    },
+    'accessory_lifts': {
+        'chest': [{'name': 'Pec Fly', 'instructions': "<h4>How-To:</h4><p>Use a wide arc and squeeze your chest muscles together.</p>"}],
+        'back': [{'name': 'Lat Pull Down', 'instructions': "<h4>How-To:</h4><p>Pull the bar to your upper chest, not your stomach.</p>"}],
+        'shoulders': [{'name': 'Lateral Raise Machine', 'instructions': "<h4>How-To:</h4><p>Raise the pads to shoulder height. Avoid shrugging.</p>"}],
+        'biceps': [{'name': 'Bicep Curls Machine', 'instructions': "<h4>How-To:</h4><p>Keep your elbows locked in place and focus on the squeeze.</p>"}],
+        'triceps': [{'name': 'Triceps Pushdown (Cable)', 'instructions': "<h4>How-To:</h4><p>Keep your elbows tucked at your sides. Extend your arms fully.</p>"}],
+        'quads': [{'name': 'Leg Extension', 'instructions': "<h4>How-To:</h4><p>Extend your legs fully and control the weight on the way down.</p>"}],
+        'hamstrings': [{'name': 'Seated Leg Curls', 'instructions': "<h4>How-To:</h4><p>Curl the weight smoothly, focusing on your hamstrings.</p>"}],
+        'calves': [{'name': 'Standing Calf Raise', 'instructions': "<h4>How-To:</h4><p>Push up as high as possible on your toes, then get a deep stretch at the bottom.</p>"}],
+        'core': [{'name': 'Ab Crunch Machine', 'instructions': "<h4>How-To:</h4><p>Crunch with your abs, not by pulling with your neck or arms.</p>"}, {'name': 'Torso Rotation', 'instructions': "<h4>How-To:</h4><p>Rotate your torso in a controlled manner.</p>"}, {'name': 'Cable Pallof Press', 'instructions': "<h4>How-To:</h4><p>Resist the rotational pull from the cable.</p>"}]
+    },
+    'cardio': {
+        'steady_state': [{'name': 'Treadmill Jog', 'instructions': "<h4>Settings:</h4><p>20-30 min. Speed: 7-9 km/h.</p>"}],
+        'hiit': [{'name': 'Bike Sprints', 'instructions': "<h4>Plan:</h4><p>30 seconds max effort sprint, followed by 90 seconds easy pedaling. Repeat 8-10 times.</p>"}]
+    },
+    'cooldown': {
+        'cardio': [{'name': 'Treadmill Cool-down Walk', 'instructions': "<h4>Settings:</h4><p>3-5 min. Incline: 0. Speed: 4-5 km/h.</p>"}],
+        'stretches': [{'name': 'Quad Stretch'}, {'name': 'Hamstring Stretch'}, {'name': 'Chest Stretch'}, {'name': 'Triceps Stretch'}]
+    }
 }
 
 @app.context_processor
 def inject_exercise_library():
     flat_library = []
-    for category in EXERCISE_KNOWLEDGE_BASE['main'].values():
-        flat_library.extend(category)
+    for top_level_category in EXERCISE_KNOWLEDGE_BASE.values():
+        if isinstance(top_level_category, dict):
+            for sub_category in top_level_category.values():
+                flat_library.extend(sub_category)
     unique_library = list({v['name']: v for v in flat_library}.values())
     return dict(EXERCISE_LIBRARY=unique_library)
 
@@ -137,8 +131,7 @@ def get_progressive_overload_suggestion(exercise_name, last_log_details, rep_tar
         return "<h4>Starting Weight:</h4><p>This is your first time. Find a weight that feels challenging for the target reps (e.g., 15-25 kg).</p>"
     
     exercise_log = last_log_details.get(exercise_name, {})
-    last_weight = 0
-    all_reps_met = True
+    last_weight = 0; all_reps_met = True
     logged_sets = [data for set_num, data in exercise_log.items() if set_num.isdigit()]
     
     if not logged_sets:
@@ -170,9 +163,9 @@ def generate_ai_workout_plan(user):
     goals = profile.physique_goal.split(',')
     
     rep_range, rep_target = ("4 sets of 6-8 reps", 6) if 'bold' in goals or 'strength' in goals else ("3 sets of 10-12 reps", 10)
-    cardio_duration = 20 if 'stamina' in goals or 'lean' in goals else 10
+    cardio_type = 'hiit' if 'stamina' in goals else 'steady_state'
     
-    rotation = ['Push', 'Pull', 'Legs'] if len(days) >= 4 else ['Upper Body', 'Lower Body', 'Full Body'] if len(days) == 3 else ['Full Body']
+    rotation = ['Push', 'Pull', 'Legs'] if len(days) >= 4 else ['Upper Body', 'Lower Body', 'Full Body']
     split = {}
     if rotation:
         day_map = {name: i for i, name in enumerate(["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"])}
@@ -182,48 +175,51 @@ def generate_ai_workout_plan(user):
 
     weekly_plan = {}
     day_names = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
-
     for day in day_names:
         if day in split:
             workout_type = split[day]
             workout = {"workout_name": f"{workout_type} Day", "structure": []}
             
-            # 1. Warm-up
-            workout['structure'].append({"type": "Warm-up", "details": EXERCISE_KNOWLEDGE_BASE['cardio'][0], "duration": "5 minutes"})
-            workout['structure'].extend([{"type": "Warm-up", "details": ex, "duration": "30 seconds"} for ex in random.sample(EXERCISE_KNOWLEDGE_BASE['warmup_dynamic'], 2)])
+            # 1. Warm-Up
+            workout['structure'].append({"type": "Warm-Up Cardio", "details": EXERCISE_KNOWLEDGE_BASE['warmup']['cardio'][0], "duration": "5 minutes"})
+            workout['structure'].extend([{"type": "Warm-Up Mobility", "details": ex, "duration": "30 seconds"} for ex in random.sample(EXERCISE_KNOWLEDGE_BASE['warmup']['mobility'], 2)])
+            workout['structure'].extend([{"type": "Warm-Up Activation", "details": ex, "duration": "10-12 reps"} for ex in random.sample(EXERCISE_KNOWLEDGE_BASE['warmup']['activation'], 2)])
             
-            # 2. Main Exercises
-            exercises_to_add = []
-            def get_available_exercises(muscle_group):
-                return [ex for ex in EXERCISE_KNOWLEDGE_BASE['main'].get(muscle_group, []) if ex['name'] not in previous_exercises] or EXERCISE_KNOWLEDGE_BASE['main'].get(muscle_group, [])
+            def get_available_exercises(ex_type, muscle_group):
+                return [ex for ex in EXERCISE_KNOWLEDGE_BASE[ex_type].get(muscle_group, []) if ex['name'] not in previous_exercises] or EXERCISE_KNOWLEDGE_BASE[ex_type].get(muscle_group, [])
 
+            # 2. Main & Accessory Lifts
+            main_lifts = []
+            accessory_lifts = []
             if workout_type == 'Push':
-                exercises_to_add.extend(random.sample(get_available_exercises('chest'), 2) + random.sample(get_available_exercises('triceps'), 1))
+                main_lifts.extend(random.sample(get_available_exercises('main_lifts', 'chest'), 1))
+                accessory_lifts.extend(random.sample(get_available_exercises('accessory_lifts', 'shoulders'), 1) + random.sample(get_available_exercises('accessory_lifts', 'triceps'), 2))
             elif workout_type == 'Pull':
-                exercises_to_add.extend(random.sample(get_available_exercises('back'), 2) + random.sample(get_available_exercises('biceps'), 1))
+                main_lifts.extend(random.sample(get_available_exercises('main_lifts', 'back'), 2))
+                accessory_lifts.extend(random.sample(get_available_exercises('accessory_lifts', 'biceps'), 1))
             elif workout_type in ['Legs', 'Lower Body']:
-                exercises_to_add.extend(random.sample(get_available_exercises('quads'), 1) + random.sample(get_available_exercises('hamstrings'), 1) + random.sample(get_available_exercises('calves'), 1))
+                main_lifts.extend(random.sample(get_available_exercises('main_lifts', 'legs'), 2))
+                accessory_lifts.extend(random.sample(get_available_exercises('accessory_lifts', 'calves'), 1))
             else: # Full Body or Upper Body
-                exercises_to_add.extend(random.sample(get_available_exercises('chest'), 1) + random.sample(get_available_exercises('back'), 1) + random.sample(get_available_exercises('quads'), 1))
+                main_lifts.extend(random.sample(get_available_exercises('main_lifts', 'chest'), 1) + random.sample(get_available_exercises('main_lifts', 'back'), 1) + random.sample(get_available_exercises('main_lifts', 'legs'), 1))
 
-            # 3. Focus Area Exercises
             for area in focus_areas:
-                if area in EXERCISE_KNOWLEDGE_BASE['main']:
-                    exercises_to_add.append(random.choice(get_available_exercises(area)))
+                accessory_lifts.append(random.choice(get_available_exercises('accessory_lifts', area)))
             
-            unique_exercises = list({ex['name']: ex for ex in exercises_to_add}.values())
-
-            for ex_obj in unique_exercises:
+            all_lifts = list({ex['name']: ex for ex in (main_lifts + accessory_lifts)}.values())
+            for ex_obj in all_lifts:
                 ex_obj_copy = ex_obj.copy()
                 suggestion = get_progressive_overload_suggestion(ex_obj_copy['name'], last_log_details, rep_target)
                 ex_obj_copy['instructions'] = suggestion + ex_obj_copy.get('instructions', '')
-                workout['structure'].append({"type": "Main", "details": ex_obj_copy, "target": rep_range, "rest": "60-90 seconds"})
+                workout['structure'].append({"type": "Main Exercise", "details": ex_obj_copy, "target": rep_range, "rest": "60-90 seconds"})
             
-            # 4. Cooldown Cardio
-            workout['structure'].append({"type": "Cooldown Cardio", "details": EXERCISE_KNOWLEDGE_BASE['cardio'][1], "duration": "5-10 minutes"})
+            # 3. Cardio
+            workout['structure'].append({"type": "Cardio", "details": random.choice(EXERCISE_KNOWLEDGE_BASE['cardio'][cardio_type]), "duration": "15 minutes"})
             
-            # 5. Stretching
-            workout['structure'].extend([{"type": "Stretching", "details": ex, "duration": "30 seconds"} for ex in random.sample(EXERCISE_KNOWLEDGE_BASE['cooldown_static'], 2)])
+            # 4. Cool-Down
+            workout['structure'].append({"type": "Cooldown Cardio", "details": EXERCISE_KNOWLEDGE_BASE['cooldown']['cardio'][0], "duration": "5 minutes"})
+            workout['structure'].extend([{"type": "Stretching", "details": ex, "duration": "30 seconds"} for ex in random.sample(EXERCISE_KNOWLEDGE_BASE['cooldown']['stretches'], 3)])
+            
             weekly_plan[day] = workout
         else:
             weekly_plan[day] = {"workout_name": "Rest Day", "structure": []}
@@ -360,7 +356,7 @@ def get_plan():
     plan_data = {}
     for plan in user_plans:
         structure = json.loads(plan.plan_details).get('structure', [])
-        exercise_names = [item.get('details', {}).get('name', 'Unnamed Step') for item in structure]
+        exercise_names = [f"{item['type']}: {item.get('details', {}).get('name', 'Unnamed')}" for item in structure]
         plan_data[plan.day_of_week] = {"workout_name": plan.workout_name, "exercises": exercise_names}
     return jsonify(plan_data)
 
