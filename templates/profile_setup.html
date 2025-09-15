@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fitness - Setup Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1>Welcome! Let’s Set Up Your Fitness Profile</h1>
+            <p>Follow the steps below. Don’t worry, it’s simple!</p>
+
+            <form action="/profile_setup" method="post" class="auth-form">
+
+                <!-- Step 1: Account Info -->
+                <div class="form-step">
+                    <h3>Account Info</h3>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" placeholder="Your username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Your password" required>
+                    </div>
+                </div>
+
+                <!-- Step 2: Personal Details -->
+                <div class="form-step">
+                    <h3>Personal Details</h3>
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" name="age" placeholder="e.g., 25" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="height">Height (cm)</label>
+                        <input type="number" id="height" name="height" placeholder="e.g., 170" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="weight">Weight (kg)</label>
+                        <input type="number" step="0.1" id="weight" name="weight" placeholder="e.g., 70.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" name="gender" required>
+                            <option value="" disabled selected>Select...</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Step 3: Workout Preferences -->
+                <div class="form-step">
+                    <h3>Workout Preferences</h3>
+                    <div class="form-group">
+                        <label>Workout Days</label>
+                        <div class="checkbox-group day-selector">
+                            {% for day in ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] %}
+                            <input type="checkbox" id="day-{{day[:3].lower()}}" name="workout_days" value="{{day}}">
+                            <label for="day-{{day[:3].lower()}}">{{day[:3]}}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Physique Goals</label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="goal1" name="physique_goal" value="athletic">
+                            <label for="goal1">Athletic</label>
+                            <input type="checkbox" id="goal2" name="physique_goal" value="bold">
+                            <label for="goal2">Bold/Bulky</label>
+                            <input type="checkbox" id="goal3" name="physique_goal" value="lean">
+                            <label for="goal3">Lean Physique</label>
+                            <input type="checkbox" id="goal4" name="physique_goal" value="stamina">
+                            <label for="goal4">Stamina</label>
+                            <input type="checkbox" id="goal5" name="physique_goal" value="strength">
+                            <label for="goal5">Strength</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="duration">Session Duration</label>
+                        <select id="duration" name="duration" required>
+                            <option value="0.75">45 Minutes</option>
+                            <option value="1.0" selected>1 Hour</option>
+                            <option value="1.5">1 Hour 30 Minutes</option>
+                            <option value="2.0">2 Hours</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="equipment">Equipment Access</label>
+                        <select id="equipment" name="equipment" required>
+                            <option value="both">Machines & Free Weights</option>
+                            <option value="machine">Machines Only</option>
+                            <option value="none">No Equipment</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Step 4: Focus Areas -->
+                <div class="form-step">
+                    <h3>Focus Areas (Optional)</h3>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="focus1" name="focus_areas" value="core"><label for="focus1">Abs/Core</label>
+                        <input type="checkbox" id="focus2" name="focus_areas" value="chest"><label for="focus2">Chest</label>
+                        <input type="checkbox" id="focus3" name="focus_areas" value="biceps"><label for="focus3">Biceps</label>
+                        <input type="checkbox" id="focus4" name="focus_areas" value="triceps"><label for="focus4">Triceps</label>
+                        <input type="checkbox" id="focus5" name="focus_areas" value="quads"><label for="focus5">Quads</label>
+                    </div>
+                </div>
+
+                <!-- Step 5: Previous Logs -->
+                <div class="form-step" id="previous-log-section">
+                    <h3>Previous Week’s Workout (Optional)</h3>
+                    <div class="form-group">
+                        <label>Workout Days</label>
+                        <div class="checkbox-group day-selector">
+                            {% for day in ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] %}
+                            <input type="checkbox" id="prev-{{day[:3].lower()}}" name="prev_day" value="{{day}}">
+                            <label for="prev-{{day[:3].lower()}}">{{day[:3]}}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div id="exercise-list-dynamic" class="exercise-list" style="display: none;">
+                        {% for ex in EXERCISE_LIBRARY|sort(attribute='name') %}
+                        <div class="exercise-item">
+                            <label>
+                                <input type="checkbox" class="exercise-checkbox" name="prev_exercise" value="{{ ex.name }}"> {{ ex.name }}
+                            </label>
+                            <div class="log-inputs">
+                                <input type="number" name="prev_{{ ex.name }}_sets" placeholder="Sets">
+                                <input type="number" name="prev_{{ ex.name }}_reps" placeholder="Reps">
+                                <input type="number" step="0.5" name="prev_{{ ex.name }}_kg" placeholder="kg">
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" disabled>Complete Profile</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='signup.js') }}"></script>
+</body>
+</html>
