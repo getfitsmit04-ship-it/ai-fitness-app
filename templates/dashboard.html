@@ -24,10 +24,10 @@
     <main class="container">
         <div class="dashboard-header">
             <h2>Welcome back, {{ user.username }}!</h2>
-            <p>Your AI-powered plan for the week. Don’t worry — we’ll show you every step, like a friendly coach!</p>
+            <p>Your AI-powered plan for the week. Don’t worry — we’ll show you every step like a friendly coach!</p>
+            <p>Today is <b>{{ current_date }}</b></p>
         </div>
 
-        <!-- Missed Workout Alert -->
         {% if missed_workout %}
         <div class="missed-workout-alert">
             <h4>Oops! You missed a workout yesterday.</h4>
@@ -39,34 +39,25 @@
         </div>
         {% endif %}
 
-        <!-- Week Tabs -->
         <div class="week-tabs">
             {% for day in ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] %}
             <button class="week-tab" data-day="{{ day }}">{{ day[:3] }}</button>
             {% endfor %}
         </div>
 
-        <!-- Workout Preview Card -->
         <div class="workout-preview-card">
             <h3 id="preview-title">Today's Workout: Loading...</h3>
-            <ul id="exercise-list">
-                <!-- Populated by script.js -->
-            </ul>
+            <ul id="exercise-list"></ul>
             <button id="start-workout-btn" class="btn btn-primary" disabled>Start Workout</button>
         </div>
 
-        <!-- How-to Instructions Section -->
         <div id="instructions-panel" class="instructions-panel">
             <h3>How to do each exercise</h3>
-            <p>Don’t worry — we explain like you’re 5! Follow along slowly and carefully. Your muscles will thank you!</p>
-            <ul id="exercise-instructions">
-                <!-- Populated by script.js -->
-            </ul>
+            <ul id="exercise-instructions"></ul>
         </div>
     </main>
 
     <script>
-        // Inject weekly plan from Flask backend
         const userPlans = {{ user.workout_plans | tojson }};
         const weekDays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 
@@ -83,39 +74,33 @@
                 return;
             }
 
-            titleEl.textContent = plan.workout_name;
+            titleEl.textContent = `${plan.workout_name} - ${day}`;
             listEl.innerHTML = "";
             instructionsEl.innerHTML = "";
 
             const structure = JSON.parse(plan.plan_details).structure;
 
-            structure.forEach((step, index) => {
+            structure.forEach(step => {
                 const exercise = step.details;
                 const stepName = exercise.name || step.type;
                 const durationOrReps = step.duration || step.target || "";
                 const rest = step.rest ? ` (Rest: ${step.rest})` : "";
 
-                // List item
                 const li = document.createElement('li');
                 li.innerHTML = `<b>${stepName}</b> — ${durationOrReps}${rest}`;
                 listEl.appendChild(li);
 
-                // Instructions
                 const instrLi = document.createElement('li');
-                instrLi.innerHTML = `<b>${stepName}:</b> ${exercise.instructions || "Follow the movement slowly. Imagine you are playing a game and move gently."}`;
+                instrLi.innerHTML = `<b>${stepName}:</b> ${exercise.instructions || "Move slowly, follow each step carefully."}`;
                 instructionsEl.appendChild(instrLi);
             });
         }
 
-        // Initial render for today
         const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
         renderWorkout(today);
 
-        // Week tab clicks
         document.querySelectorAll('.week-tab').forEach(btn => {
-            btn.addEventListener('click', () => {
-                renderWorkout(btn.dataset.day);
-            });
+            btn.addEventListener('click', () => renderWorkout(btn.dataset.day));
         });
     </script>
 </body>

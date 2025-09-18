@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workout Session - AI Fitness</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ timestamp }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <header class="main-header">
@@ -21,134 +18,64 @@
         </div>
     </header>
 
-    <main class="container" id="workout-session">
-        <!-- Exercise Header -->
-        <div class="workout-header">
-            <h2 id="exercise-name">Loading...</h2>
-            <div class="progress-bar-container">
-                <div id="progress-bar"></div>
-            </div>
+    <main class="container">
+        <h2 id="exercise-name">Loading...</h2>
+        <div class="progress-bar-container">
+            <div id="progress-bar"></div>
         </div>
 
-        <!-- Exercise Card -->
-        <div class="workout-card">
-            <div class="exercise-media">
-                <img id="exercise-gif" src="" alt="Exercise demonstration" style="display: none;">
-            </div>
-            <div id="exercise-details"></div>
+        <img id="exercise-gif" src="" alt="Exercise demo" style="display: none;">
+        <div id="exercise-details"></div>
+        <div id="exercise-instructions"></div>
 
-            <!-- Logging interface for reps/sets -->
-            <div id="logging-interface"></div>
-
-            <!-- Child-friendly instructions -->
-            <div id="instructions-panel" class="instructions-panel">
-                <h3>How to do this exercise:</h3>
-                <div id="exercise-instructions">
-                    Loading instructions...
-                </div>
-            </div>
-
-            <!-- Navigation buttons -->
-            <div class="workout-controls">
-                <button id="prev-exercise-btn" class="btn btn-secondary" disabled>Previous</button>
-                <button id="next-exercise-btn" class="btn btn-primary">Next</button>
-            </div>
+        <div class="workout-controls">
+            <button id="prev-exercise-btn" class="btn btn-secondary" disabled>Previous</button>
+            <button id="next-exercise-btn" class="btn btn-primary">Next</button>
         </div>
 
-        <!-- Session Summary -->
-        <div class="session-summary" style="display: none;">
+        <div class="session-summary" style="display:none;">
             <h2>Workout Complete! 🎉</h2>
-            <p>Approximate Calories Burned: <strong id="calories-burned">0</strong></p>
+            <p>Calories Burned: <strong id="calories-burned">0</strong></p>
             <form id="weight-log-form">
-                <div class="form-group">
-                    <label for="todays-weight">Log Today's Weight (kg)</label>
-                    <input type="number" step="0.1" id="todays-weight" name="todays-weight" placeholder="e.g., 75.5">
-                </div>
-                <button type="submit" class="btn btn-primary">Finish & Save</button>
+                <label for="todays-weight">Today's Weight (kg)</label>
+                <input type="number" step="0.1" id="todays-weight">
+                <button type="submit" class="btn btn-primary">Save & Finish</button>
             </form>
         </div>
     </main>
 
-    <!-- Rest Timer Overlay -->
-    <div id="rest-timer-overlay" style="display: none;">
-        <div class="rest-timer-content">
-            <h2>REST ⏱</h2>
-            <div id="timer-countdown">90</div>
-            <button id="skip-rest-btn" class="btn btn-secondary">Skip Rest</button>
-        </div>
-    </div>
-
-    <!-- Timer sound -->
-    <audio id="timer-sound" src="{{ url_for('static', filename='assets/timer-sound.mp3') }}" preload="auto"></audio>
-
     <script>
-        // Inject workout plan and user profile from Flask backend
         const workoutPlan = {{ workout_data|tojson }};
-        const userProfile = {{ profile|tojson }};
-
-        let currentStepIndex = 0;
-        const steps = workoutPlan.structure;
+        let currentStep = 0;
 
         function renderStep(index) {
-            const step = steps[index];
-            const exerciseNameEl = document.getElementById('exercise-name');
-            const detailsEl = document.getElementById('exercise-details');
-            const instructionsEl = document.getElementById('exercise-instructions');
+            const step = workoutPlan.structure[index];
+            if(!step) return;
+
+            document.getElementById('exercise-name').textContent = step.details.name || step.type;
+            document.getElementById('exercise-details').textContent = `${step.type} - ${step.duration || step.target || ""} ${step.rest ? `(Rest: ${step.rest})` : ""}`;
+            document.getElementById('exercise-instructions').textContent = step.details.instructions || "Follow carefully and move slowly.";
+            
             const gifEl = document.getElementById('exercise-gif');
+            if(step.details.gif){ gifEl.src=step.details.gif; gifEl.style.display='block'; } 
+            else{ gifEl.style.display='none'; }
 
-            if (!step) return;
+            document.getElementById('prev-exercise-btn').disabled = index===0;
+            document.getElementById('next-exercise-btn').textContent = index===workoutPlan.structure.length-1?"Finish Workout":"Next";
 
-            const exercise = step.details;
-            exerciseNameEl.textContent = exercise.name || step.type;
-
-            // Show duration or target
-            const durationOrTarget = step.duration || step.target || "";
-            detailsEl.innerHTML = `<p>${step.type} - ${durationOrTarget} ${step.rest ? `(Rest: ${step.rest})` : ""}</p>`;
-
-            // Show instructions in simple, child-friendly language
-            instructionsEl.innerHTML = `
-                ${exercise.instructions || "Move slowly, follow each step carefully, and pretend you are playing a fun game with your muscles!"}
-            `;
-
-            // GIF if exists
-            if (exercise.gif) {
-                gifEl.src = exercise.gif;
-                gifEl.style.display = 'block';
-            } else {
-                gifEl.style.display = 'none';
-            }
-
-            // Update buttons
-            document.getElementById('prev-exercise-btn').disabled = (index === 0);
-            document.getElementById('next-exercise-btn').textContent = (index === steps.length - 1) ? "Finish Workout" : "Next";
-
-            // Update progress bar
-            const progress = ((index + 1) / steps.length) * 100;
-            document.getElementById('progress-bar').style.width = progress + "%";
+            document.getElementById('progress-bar').style.width = ((index+1)/workoutPlan.structure.length*100)+"%";
         }
 
-        function nextStep() {
-            if (currentStepIndex < steps.length - 1) {
-                currentStepIndex++;
-                renderStep(currentStepIndex);
-            } else {
-                document.querySelector('.workout-card').style.display = 'none';
-                document.querySelector('.session-summary').style.display = 'block';
-            }
-        }
+        document.getElementById('next-exercise-btn').addEventListener('click',()=>{
+            if(currentStep<workoutPlan.structure.length-1){ currentStep++; renderStep(currentStep); }
+            else{ document.querySelector('.session-summary').style.display='block'; document.querySelector('#exercise-name').style.display='none'; }
+        });
 
-        function prevStep() {
-            if (currentStepIndex > 0) {
-                currentStepIndex--;
-                renderStep(currentStepIndex);
-            }
-        }
+        document.getElementById('prev-exercise-btn').addEventListener('click',()=>{
+            if(currentStep>0){ currentStep--; renderStep(currentStep); }
+        });
 
-        document.getElementById('next-exercise-btn').addEventListener('click', nextStep);
-        document.getElementById('prev-exercise-btn').addEventListener('click', prevStep);
-
-        // Initialize first step
-        renderStep(currentStepIndex);
+        renderStep(currentStep);
     </script>
 </body>
 </html>
