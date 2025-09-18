@@ -1,3 +1,5 @@
+# app.py — corrected full script
+
 # --- IMPORTS ---
 import os
 import json
@@ -15,6 +17,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a_default_secret_key_for_local_dev')
 database_url = os.environ.get('DATABASE_URL')
 if database_url and database_url.startswith("postgres://"):
+    # SQLAlchemy/psycopg fix for some hosting platforms
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///fitness_app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -138,7 +141,9 @@ def inject_exercise_library():
     flat_library = []
     for cat in EXERCISE_KNOWLEDGE_BASE['main'].values():
         flat_library.extend(cat)
-    return dict(EXERCISE_LIBRARY=list({v['name']: v for v in flat_library}.values()))
+    # return unique items by name
+    unique = list({v['name']: v for v in flat_library}.values())
+    return dict(EXERCISE_LIBRARY=unique)
 
 # --- PROGRESSIVE OVERLOAD LOGIC ---
 def get_progressive_overload_suggestion(exercise_name, last_log_details, rep_target):
@@ -153,8 +158,11 @@ def get_progressive_overload_suggestion(exercise_name, last_log_details, rep_tar
         return "<p>Start light and focus on form!</p>"
 
     for set_data in logged_sets:
-        reps_done = int(set_data.get('reps', 0))
-        last_weight = float(set_data.get('weight', 0))
+        try:
+            reps_done = int(set_data.get('reps', 0))
+            last_weight = float(set_data.get('weight', 0))
+        except (TypeError, ValueError):
+            continue
         if reps_done < rep_target:
             all_reps_met = False
             break
@@ -168,20 +176,27 @@ def get_progressive_overload_suggestion(exercise_name, last_log_details, rep_tar
 
 # --- AI WORKOUT PLAN GENERATION ---
 def generate_ai_workout_plan(user):
+    # If user has no profile, return a simple empty plan (caller should redirect to profile_setup)
+    if not user or not user.profile:
+        return {}
+
     profile = user.profile
     last_log = WorkoutLog.query.filter_by(user_id=user.id).order_by(WorkoutLog.date.desc()).first()
-    last_log_details = json.loads(last_log.log_details) if last_log else {}
-    previous_exercises = [log.exercise_name for log in user.previous_logs]
+    try:
+        last_log_details = json.loads(last_log.log_details) if last_log and last_log.log_details else {}
+    except Exception:
+        last_log_details = {}
+    previous_exercises = [log.exercise_name for log in user.previous_logs] if user.previous_logs else []
     focus_areas = profile.focus_areas.split(',') if profile.focus_areas else []
-    days = profile.workout_days.split(',')
-    goals = profile.physique_goal.split(',')
+    days = profile.workout_days.split(',') if profile.workout_days else []
+    goals = profile.physique_goal.split(',') if profile.physique_goal else []
 
     rep_range, rep_target = ("4 sets of 6-8 reps", 6) if 'bold' in goals or 'strength' in goals else ("3 sets of 10-12 reps", 10)
     cardio_duration = 20 if 'stamina' in goals or 'lean' in goals else 10
     rotation = ['Push', 'Pull', 'Legs'] if len(days) >= 4 else ['Upper Body', 'Lower Body', 'Full Body'] if len(days) == 3 else ['Full Body']
-    split = {}
     day_map = {name: i for i, name in enumerate(["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"])}
     sorted_days = sorted(days, key=lambda day: day_map.get(day, 7))
+    split = {}
     for i, day in enumerate(sorted_days):
         split[day] = rotation[i % len(rotation)]
 
@@ -198,25 +213,39 @@ def generate_ai_workout_plan(user):
             # Main exercises
             exercises_to_add = []
             def get_available_exercises(muscle):
-                return [ex for ex in EXERCISE_KNOWLEDGE_BASE['main'].get(muscle, []) if ex['name'] not in previous_exercises] or EXERCISE_KNOWLEDGE_BASE['main'].get(muscle, [])
+                pool = EXERCISE_KNOWLEDGE_BASE['main'].get(muscle, []) or []
+                # prefer ones the user hasn't logged before
+                choices = [ex for ex in pool if ex['name'] not in previous_exercises] or pool
+                return choices
 
             if workout_type == 'Push':
-                exercises_to_add.extend(random.sample(get_available_exercises('chest'), 2) + random.sample(get_available_exercises('triceps'), 1))
+                exercises_to_add.extend(random.sample(get_available_exercises('chest'), min(2, len(get_available_exercises('chest')))) )
+                exercises_to_add.extend(random.sample(get_available_exercises('triceps'), min(1, len(get_available_exercises('triceps')))) )
             elif workout_type == 'Pull':
-                exercises_to_add.extend(random.sample(get_available_exercises('back'), 2) + random.sample(get_available_exercises('biceps'), 1))
+                exercises_to_add.extend(random.sample(get_available_exercises('back'), min(2, len(get_available_exercises('back')))) )
+                exercises_to_add.extend(random.sample(get_available_exercises('biceps'), min(1, len(get_available_exercises('biceps')))) )
             elif workout_type in ['Legs', 'Lower Body']:
-                exercises_to_add.extend(random.sample(get_available_exercises('quads'), 1) + random.sample(get_available_exercises('hamstrings'), 1) + random.sample(get_available_exercises('calves'), 1))
+                exercises_to_add.extend(random.sample(get_available_exercises('quads'), min(1, len(get_available_exercises('quads')))) )
+                exercises_to_add.extend(random.sample(get_available_exercises('hamstrings'), min(1, len(get_available_exercises('hamstrings')))) )
+                exercises_to_add.extend(random.sample(get_available_exercises('calves'), min(1, len(get_available_exercises('calves')))) )
             else:
-                exercises_to_add.extend(random.sample(get_available_exercises('chest'), 1) + random.sample(get_available_exercises('back'), 1) + random.sample(get_available_exercises('quads'), 1))
+                exercises_to_add.extend(random.sample(get_available_exercises('chest'), min(1, len(get_available_exercises('chest')))) )
+                exercises_to_add.extend(random.sample(get_available_exercises('back'), min(1, len(get_available_exercises('back')))) )
+                exercises_to_add.extend(random.sample(get_available_exercises('quads'), min(1, len(get_available_exercises('quads')))) )
 
+            # Add any user-requested focus areas
             for area in focus_areas:
                 if area in EXERCISE_KNOWLEDGE_BASE['main']:
-                    exercises_to_add.append(random.choice(get_available_exercises(area)))
+                    choices = get_available_exercises(area)
+                    if choices:
+                        exercises_to_add.append(random.choice(choices))
 
+            # Deduplicate by name
             unique_exercises = list({ex['name']: ex for ex in exercises_to_add}.values())
             for ex_obj in unique_exercises:
                 ex_copy = ex_obj.copy()
                 suggestion = get_progressive_overload_suggestion(ex_copy['name'], last_log_details, rep_target)
+                # Append the suggestion before the base instruction so it's visible first
                 ex_copy['instructions'] = suggestion + "<br>" + ex_copy.get('instructions', '')
                 workout['structure'].append({"type": "Main", "details": ex_copy, "target": rep_range, "rest": "60-90 sec"})
 
@@ -233,50 +262,143 @@ def generate_ai_workout_plan(user):
 # --- ROUTES ---
 @app.route('/')
 def index():
+    # If logged in, redirect to dashboard
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
     return render_template('index.html', timestamp=int(time.time()))
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    # Signup only handles account creation (username/password).
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        if User.query.filter_by(username=username).first():
-            flash("Username already exists")
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        if not username or not password:
+            flash("Please provide username and password.", "danger")
             return redirect(url_for('signup'))
+
+        if User.query.filter_by(username=username).first():
+            flash("Username already exists", "danger")
+            return redirect(url_for('signup'))
+
         user = User(username=username)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
         login_user(user)
+        # After creating account, send user to profile setup to fill details
         return redirect(url_for('profile_setup'))
+
     return render_template('signup.html', timestamp=int(time.time()))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        user = User.query.filter_by(username=username).first()
+        if user and user.check_password(password):
+            login_user(user)
+            return redirect(url_for('dashboard'))
+        flash("Invalid username or password", "danger")
+        return redirect(url_for('login'))
+    return render_template('login.html', timestamp=int(time.time()))
 
 @app.route('/profile_setup', methods=['GET','POST'])
 @login_required
 def profile_setup():
+    # Save or update the user's profile details
     if request.method == 'POST':
-        profile = UserProfile(
-            age=int(request.form.get('age')),
-            height=int(request.form.get('height')),
-            weight=float(request.form.get('weight')),
-            gender=request.form.get('gender'),
-            workout_days=','.join(request.form.getlist('workout_days')),
-            physique_goal=','.join(request.form.getlist('physique_goal')),
-            duration=float(request.form.get('duration')),
-            equipment=','.join(request.form.getlist('equipment')),
-            focus_areas=','.join(request.form.getlist('focus_areas')),
-            user_id=current_user.id
-        )
-        db.session.add(profile)
+        try:
+            age = int(request.form.get('age'))
+            height = int(request.form.get('height'))
+            weight = float(request.form.get('weight'))
+            gender = request.form.get('gender')
+            workout_days = ','.join(request.form.getlist('workout_days'))
+            physique_goal = ','.join(request.form.getlist('physique_goal'))
+            duration = float(request.form.get('duration'))
+            equipment = request.form.get('equipment') or ''
+            focus_areas = ','.join(request.form.getlist('focus_areas'))
+        except Exception as e:
+            flash("There was an error with the form values. Please check and try again.", "danger")
+            return redirect(url_for('profile_setup'))
+
+        # If profile exists, update; otherwise create
+        profile = UserProfile.query.filter_by(user_id=current_user.id).first()
+        if profile:
+            profile.age = age
+            profile.height = height
+            profile.weight = weight
+            profile.gender = gender
+            profile.workout_days = workout_days
+            profile.physique_goal = physique_goal
+            profile.duration = duration
+            profile.equipment = equipment
+            profile.focus_areas = focus_areas
+        else:
+            profile = UserProfile(
+                age=age,
+                height=height,
+                weight=weight,
+                gender=gender,
+                workout_days=workout_days,
+                physique_goal=physique_goal,
+                duration=duration,
+                equipment=equipment,
+                focus_areas=focus_areas,
+                user_id=current_user.id
+            )
+            db.session.add(profile)
+
+        # Save any previous exercises the user logged in this form
+        prev_exercises = request.form.getlist('prev_exercise')
+        # Simplest approach: remove prior previous logs, then add the new ones from the form
+        # (You may change this logic if you prefer to merge instead of replace.)
+        PreviousLog.query.filter_by(user_id=current_user.id).delete()
+        for ex_name in prev_exercises:
+            sets = request.form.get(f"prev_{ex_name}_sets")
+            reps = request.form.get(f"prev_{ex_name}_reps")
+            kg = request.form.get(f"prev_{ex_name}_kg")
+            try:
+                sets_val = int(sets) if sets else None
+            except ValueError:
+                sets_val = None
+            try:
+                reps_val = int(reps) if reps else None
+            except ValueError:
+                reps_val = None
+            try:
+                kg_val = float(kg) if kg else None
+            except ValueError:
+                kg_val = None
+
+            prev = PreviousLog(
+                exercise_name=ex_name,
+                sets=sets_val,
+                reps=reps_val,
+                kg=kg_val,
+                user_id=current_user.id
+            )
+            db.session.add(prev)
+
         db.session.commit()
+        flash("Profile saved.", "success")
         return redirect(url_for('dashboard'))
+
+    # GET: show profile setup form
     return render_template('profile_setup.html', timestamp=int(time.time()))
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    # If user hasn't completed profile, redirect to profile setup
+    if not current_user.profile:
+        flash("Please complete your profile to get a personalized plan.", "info")
+        return redirect(url_for('profile_setup'))
+
     plan = generate_ai_workout_plan(current_user)
-    return render_template('dashboard.html', plan=plan, timestamp=int(time.time()))
+    # Pass user explicitly so templates using {{ user.username }} continue to work
+    return render_template('dashboard.html', user=current_user, plan=plan, timestamp=int(time.time()))
 
 @app.route('/performance')
 @login_required
@@ -286,26 +408,51 @@ def performance():
 @app.route('/api/get_performance_data')
 @login_required
 def get_performance_data():
-    weight_logs = WorkoutLog.query.filter_by(user_id=current_user.id).order_by(WorkoutLog.date).all()
-    weight_labels, weight_data = [], []
-    volume_labels, volume_data = [], []
+    logs = WorkoutLog.query.filter_by(user_id=current_user.id).order_by(WorkoutLog.date.asc()).all()
+    weight_labels = []
+    weight_data = []
+    volume_labels = []
+    volume_data = []
     exercise_progression = {}
 
-    for log in weight_logs:
-        weight_labels.append(log.date.strftime("%d-%b"))
-        weight_data.append(log.todays_weight or 0)
+    for log in logs:
+        # Weight logs
+        if log.todays_weight is not None:
+            weight_labels.append(log.date.strftime('%b %d'))
+            weight_data.append(log.todays_weight)
 
-        log_details = json.loads(log.log_details)
+        # Volume and exercise progression
         total_volume = 0
-        for ex_name, sets_dict in log_details.items():
-            exercise_progression.setdefault(ex_name, {'labels': [], 'data': []})
-            max_weight = max([float(s['weight']) for k,s in sets_dict.items() if k.isdigit()] or [0])
-            exercise_progression[ex_name]['labels'].append(log.date.strftime("%d-%b"))
-            exercise_progression[ex_name]['data'].append(max_weight)
+        try:
+            log_details = json.loads(log.log_details) if log.log_details else {}
+        except Exception:
+            log_details = {}
 
-            for set_data in sets_dict.values():
-                total_volume += int(set_data.get('reps', 0)) * float(set_data.get('weight', 0))
-        volume_labels.append(log.date.strftime("%d-%b"))
+        for exercise, sets in (log_details.items() if isinstance(log_details, dict) else []):
+            max_e1rm = 0
+            if exercise not in exercise_progression:
+                exercise_progression[exercise] = {'labels': [], 'data': []}
+            for set_num, data in (sets.items() if isinstance(sets, dict) else []):
+                if set_num.isdigit():
+                    try:
+                        weight = float(data.get('weight', 0))
+                        reps = int(data.get('reps', 0))
+                    except Exception:
+                        continue
+                    if weight > 0 and reps > 0:
+                        total_volume += weight * reps
+                        # simple e1RM estimation (Brzycki)
+                        try:
+                            e1rm = weight / (1.0278 - (0.0278 * reps))
+                            if e1rm > max_e1rm:
+                                max_e1rm = e1rm
+                        except Exception:
+                            pass
+            if max_e1rm > 0:
+                exercise_progression[exercise]['labels'].append(log.date.strftime('%b %d'))
+                exercise_progression[exercise]['data'].append(round(max_e1rm, 1))
+
+        volume_labels.append(log.date.strftime('%b %d') + f" ({log.day_of_week[:3]})")
         volume_data.append(total_volume)
 
     return jsonify({
@@ -314,12 +461,68 @@ def get_performance_data():
         'exercise_progression': exercise_progression
     })
 
+@app.route('/api/save_workout', methods=['POST'])
+@login_required
+def save_workout():
+    data = request.get_json()
+    if not data:
+        return jsonify({'status': 'error', 'message': 'Invalid data'}), 400
+
+    try:
+        new_log = WorkoutLog(
+            day_of_week=data.get('dayOfWeek'),
+            log_details=json.dumps(data.get('logDetails') or {}),
+            todays_weight=float(data.get('todaysWeight')) if data.get('todaysWeight') else None,
+            user_id=current_user.id
+        )
+        db.session.add(new_log)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': f'Failed to save workout: {e}'}), 500
+
+    # regenerate plans for the user after saving workout
+    try:
+        # delete old plans and write new ones
+        WorkoutPlan.query.filter_by(user_id=current_user.id).delete()
+        new_plan = generate_ai_workout_plan(current_user)
+        for day, details in new_plan.items():
+            if details:
+                db.session.add(WorkoutPlan(day_of_week=day, workout_name=details['workout_name'], plan_details=json.dumps(details), user_id=current_user.id))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    return jsonify({'status': 'success', 'message': 'Workout saved'})
+
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('index'))
 
+# Optional admin reset route — keep commented or protect in production
+# @app.route('/admin/reset_all_data/<secret_key>')
+# def reset_all_data(secret_key):
+#     admin_secret_key = os.environ.get('ADMIN_RESET_KEY', 'resetmaster')
+#     if secret_key != admin_secret_key:
+#         return "Unauthorized", 403
+#     try:
+#         db.session.query(PreviousLog).delete()
+#         db.session.query(WorkoutLog).delete()
+#         db.session.query(WorkoutPlan).delete()
+#         db.session.query(UserProfile).delete()
+#         db.session.query(User).delete()
+#         db.session.commit()
+#         flash("All data has been reset successfully.")
+#     except Exception as e:
+#         db.session.rollback()
+#         flash(f"An error occurred: {e}")
+#     return redirect(url_for('index'))
+
 if __name__ == '__main__':
-    db.create_all()
+    # create DB tables if they don't exist
+    with app.app_context():
+        db.create_all()
+    # run app
     app.run(debug=True)
